@@ -30,6 +30,7 @@ public:
 	virtual void stream_set_volumes(uint32_t id, const std::vector<float> &db) {}
 	virtual void stream_close(uint32_t id) = 0;
 	virtual void stream_sink_update(uint32_t id, const int16_t *buffer, int samples_this_frame) = 0;
+	virtual void stream_sink_flush(uint32_t id) { }
 	virtual void stream_source_update(uint32_t id, int16_t *buffer, int samples_this_frame) {}
 
 	virtual void begin_update() {}

@@ -225,6 +225,7 @@ public:
 	virtual void sound_stream_set_volumes(uint32_t id, const std::vector<float> &db) override;
 	virtual void sound_stream_close(uint32_t id) override;
 	virtual void sound_stream_sink_update(uint32_t id, const int16_t *buffer, int samples_this_frame) override;
+	virtual void sound_stream_sink_flush(uint32_t id) override;
 	virtual void sound_stream_source_update(uint32_t id, int16_t *buffer, int samples_this_frame) override;
 	virtual void sound_begin_update() override;
 	virtual void sound_end_update() override;

@@ -219,6 +219,7 @@ public:
 
 	// sound_module
 	virtual void stream_sink_update(uint32_t, int16_t const *buffer, int samples_this_frame) override;
+	virtual void stream_sink_flush(uint32_t id) override;
 	virtual uint32_t get_generation() override { return 1; }
 	virtual audio_info get_information() override
 	{
@@ -281,11 +282,9 @@ private:
 
 int sound_direct_sound::init(osd_interface &osd, osd_options const &options)
 {
-	m_buffer_underflows = m_buffer_overflows = 0;
+	m_buffer_underflows = m_buffer_overflows = 0.01f;
 	m_sample_rate = options.sample_rate();
-	m_audio_latency = options.audio_latency();
-	if (m_audio_latency == 0.0f)
-		m_audio_latency = 0.1f;
+	m_audio_latency = std::clamp(options.audio_latency() * 0.1f, 0.1f, 1.0f);
 
 	// attempt to initialize DirectSound
 	if (dsound_init() != DS_OK)
@@ -382,6 +381,13 @@ void sound_direct_sound::stream_sink_update(
 
 	// adjust the input pointer
 	m_stream_buffer_in = (m_stream_buffer_in + bytes_this_frame) % m_stream_buffer.size();
+}
+
+void sound_direct_sound::stream_sink_flush(uint32_t)
+{
+	// paused: clear the looping ring so the last tail doesn't repeat as noise
+	if (m_stream_buffer)
+		m_stream_buffer.clear();
 }
 
 

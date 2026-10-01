@@ -87,6 +87,7 @@ public:
 	virtual uint32_t sound_stream_source_open(uint32_t node, std::string name, uint32_t rate) = 0;
 	virtual void sound_stream_close(uint32_t id) = 0;
 	virtual void sound_stream_sink_update(uint32_t id, const int16_t *buffer, int samples_this_frame) = 0;
+	virtual void sound_stream_sink_flush(uint32_t id) { }
 	virtual void sound_stream_source_update(uint32_t id, int16_t *buffer, int samples_this_frame) = 0;
 	virtual void sound_stream_set_volumes(uint32_t id, const std::vector<float> &db) = 0;
 	virtual void sound_begin_update() = 0;
