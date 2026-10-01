@@ -597,8 +597,7 @@ static int make_link(lua_State * L)
     return 2;
   }
 
-  int result = symbolic ? CreateSymbolicLink(newpath, oldpath, is_dir)
-      : CreateHardLink(newpath, oldpath, NULL);
+  int result = 0; if (symbolic) {lua_pushnil(L); lua_pushstring(L, "Symbolic links are not supported on Windows XP."); return 2;} else {if (CreateHardLink(newpath, oldpath, NULL) != 0) {result = 1;}}
 
   if (result) {
     return pushresult(L, result, NULL);
@@ -1084,7 +1083,7 @@ static int push_link_target(lua_State * L)
     }
     target = target2;
 #ifdef _WIN32
-    tsize = GetFinalPathNameByHandle(h, target, size, FILE_NAME_OPENED);
+    tsize = GetFullPathName(file, size, target, NULL);
 #else
     tsize = readlink(file, target, size);
 #endif

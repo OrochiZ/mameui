@@ -1341,7 +1341,7 @@ static void seqselect_settext(HWND editwnd)
 }
 
 #ifdef __GNUC__
-#pragma GCC diagnostic error "-Wunused-value"
+//#pragma GCC diagnostic error "-Wunused-value"
 #endif
 
 

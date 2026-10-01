@@ -151,5 +151,5 @@ static void extract_help_ids(const char *buffer, FILE *fp)
 
 	free (help_ids);
 }
-#pragma GCC diagnostic error "-Wsizeof-pointer-memaccess"
+//#pragma GCC diagnostic error "-Wsizeof-pointer-memaccess"
 

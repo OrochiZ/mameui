@@ -572,7 +572,7 @@ void win_iocp_socket_service_base::restart_accept_op(
       iocp_service_.on_completion(op, last_error);
     else
     {
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       if (cancel_requested)
       {
         if (::InterlockedExchangeAdd(cancel_requested, 0) == 1)
@@ -581,7 +581,7 @@ void win_iocp_socket_service_base::restart_accept_op(
           ::CancelIoEx(sock_as_handle, op);
         }
       }
-#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       iocp_service_.on_pending(op);
     }
   }

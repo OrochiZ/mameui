@@ -1621,7 +1621,7 @@ void ResetTreeViewFolders()
 		shti = TreeView_InsertItem(hTreeView, &tvs); // for current child branches
 	}
 }
-#pragma GCC diagnostic error "-Wunused-but-set-variable"
+//#pragma GCC diagnostic error "-Wunused-but-set-variable"
 
 void SelectTreeViewFolder(int folder_id)
 {

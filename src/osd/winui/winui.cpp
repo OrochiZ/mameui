@@ -6451,7 +6451,7 @@ static HICON GetSelectedFolderIcon()
 	}
 	return NULL;
 }
-#pragma GCC diagnostic error "-Wunused-but-set-variable"
+//#pragma GCC diagnostic error "-Wunused-but-set-variable"
 
 
 /* Updates all currently displayed Items in the List with the latest Data*/

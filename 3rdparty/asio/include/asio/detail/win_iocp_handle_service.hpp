@@ -385,7 +385,7 @@ private:
 
     void operator()(cancellation_type_t type)
     {
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       if (!!(type &
             (cancellation_type::terminal
               | cancellation_type::partial
@@ -393,9 +393,9 @@ private:
       {
         ::CancelIoEx(handle_, this);
       }
-#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#else // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
       (void)type;
-#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#endif // defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x2000)
     }
 
   private:

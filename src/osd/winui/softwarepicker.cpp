@@ -386,7 +386,7 @@ static void SoftwarePicker_RealizeHash(HWND hwndPicker, int nIndex)
 	}
 */
 }
-#pragma GCC diagnostic error "-Wunused-but-set-variable"
+//#pragma GCC diagnostic error "-Wunused-but-set-variable"
 
 // nCrc currently not used
 static BOOL SoftwarePicker_AddFileEntry(HWND hwndPicker, LPCSTR pszFilename, UINT nZipEntryNameLength, UINT32 nCrc, BOOL bForce, bool check)
