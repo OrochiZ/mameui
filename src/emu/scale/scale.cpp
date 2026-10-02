@@ -633,7 +633,7 @@ int scale_perform_scale(UINT8 *src, UINT8 *dst, int src_pitch, int dst_pitch, in
 //	scale_emms
 //============================================================
 
-INLINE void scale_emms(void)
+inline void scale_emms(void)
 {
 #ifdef USE_MMX_INTERP_SCALE
 	if (use_mmx)

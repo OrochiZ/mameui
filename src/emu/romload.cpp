@@ -1626,10 +1626,10 @@ rom_load_manager::rom_load_manager(running_machine &machine)
 	m_chd_list.clear();
 
 	// preload IPS patches if requested (MAMEPlus port)
-	char const *const patchname(machine().options().ips());
+	char const *const patchname(machine.options().ips());
 	if (patchname && *patchname)
 	{
-		if (!open_ips_entry(machine(), *this))
+		if (!open_ips_entry(machine, *this))
 			display_rom_load_results(false);
 	}
 

@@ -491,7 +491,7 @@ void RenderEPXC(unsigned char *src, unsigned int srcpitch, unsigned char *dst, u
 (!((c) & (1 << 31)) ? (c) : (~(c) + 1))
 
 
-INLINE UINT8 Diff(int c1, int c2)
+inline UINT8 Diff(int c1, int c2)
 {
 	int c1y = (c1 & Ymask) - (c2 & Ymask);
 	int c1u = (c1 & Umask) - (c2 & Umask);

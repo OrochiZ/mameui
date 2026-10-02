@@ -56,11 +56,11 @@ struct ips_chunk
 
 struct ips_entry
 {
-	ips_entry *next;
+	ips_entry *next = nullptr;
 	std::string rom_name;
 	std::string ips_name;
-	ips_chunk *chunk;
-	ips_chunk current;
+	ips_chunk *chunk = nullptr;
+	ips_chunk current = { };
 };
 
 ips_entry *g_ips_list;
@@ -264,7 +264,6 @@ bool parse_ips_patch(running_machine &machine, ips_entry **ips_p, const char *pa
 			}
 
 			ips_entry *entry = new ips_entry;
-			memset(entry, 0, sizeof(*entry));
 			*ips_p = entry;
 			ips_p = &entry->next;
 
@@ -405,7 +404,7 @@ void *assign_ips_patch(const rom_entry *romp)
 
 	for (ips_entry *p = g_ips_list; p; p = p->next)
 	{
-		memset(&p->current, 0, sizeof(p->current));
+		p->current = ips_chunk{ };
 
 		if (!core_stricmp(p->rom_name.c_str(), name))
 		{

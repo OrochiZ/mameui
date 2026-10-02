@@ -17,6 +17,7 @@
 #include "main.h"
 #include "natkeyboard.h"
 #include "profiler.h"
+#include "screen.h"
 
 #include "ui/uimain.h"
 
@@ -1802,8 +1803,10 @@ ioport_manager::ioport_manager(running_machine &machine) :
 		std::fill(std::begin(entries), std::end(entries), nullptr);
 
 	// autofire/custom button defaults (MAMEPlus port)
-	std::fill(std::begin(m_custom_button), std::end(m_custom_button), 0);
-	std::fill(std::begin(m_custom_button_info), std::end(m_custom_button_info), nullptr);
+	for (auto &row : m_custom_button)
+		std::fill(std::begin(row), std::end(row), 0);
+	for (auto &row : m_custom_button_info)
+		std::fill(std::begin(row), std::end(row), nullptr);
 	for (int player = 0; MAX_PLAYERS > player; ++player)
 	{
 		m_autofiredelay[player] = 3; // 1 is too short for some games
@@ -3245,7 +3248,7 @@ void ioport_manager::playback_end(const char *message)
 		else if (machine().options().playback_end_pause())
 		{
 			osd_printf_info("Pausing MAME now...\n");
-			machine().pause(true);
+			machine().pause();
 		}
 	}
 }
@@ -3259,6 +3262,11 @@ void ioport_manager::playback_end(const char *message)
 
 void ioport_manager::caption_frame_update()
 {
+	// 0.287u has no running_machine::first_screen(); enumerate instead (MAMEPlus port fix)
+	screen_device *const screen(screen_device_enumerator(machine().root_device()).first());
+	u64 const curframe(screen ? screen->frame_number() : 0);
+	attoseconds_t const refresh((screen && screen->refresh_attoseconds()) ? screen->refresh_attoseconds() : (ATTOSECONDS_PER_SECOND / 60));
+
 	if (has_caption_file() && (m_next_caption_frame < 0))
 	{
 		char read_buf[512];
@@ -3301,7 +3309,7 @@ void ioport_manager::caption_frame_update()
 			if (m_next_caption_frame == 0)
 			{
 				// zero means "invalid": hold the error message and give up
-				m_next_caption_frame = s32(machine().first_screen()->frame_number());
+				m_next_caption_frame = s32(curframe);
 				m_next_caption = _("Error: illegal caption file");
 				m_caption_file.close();
 				break;
@@ -3337,7 +3345,7 @@ void ioport_manager::caption_frame_update()
 					break;
 			}
 			if (m_next_caption_timer == 0)
-				m_next_caption_timer = u32(5 * ATTOSECONDS_PER_SECOND / machine().first_screen()->refresh_attoseconds()); // 5 sec
+				m_next_caption_timer = u32(5 * ATTOSECONDS_PER_SECOND / refresh); // 5 sec
 
 			// the rest of the line is the caption text
 			m_next_caption = &p[i];
@@ -3347,7 +3355,7 @@ void ioport_manager::caption_frame_update()
 		}
 	}
 
-	if (m_next_caption_timer && (m_next_caption_frame <= s32(machine().first_screen()->frame_number())))
+	if (m_next_caption_timer && (m_next_caption_frame <= s32(curframe)))
 	{
 		m_caption_timer = m_next_caption_timer;
 		m_caption_text = m_next_caption;

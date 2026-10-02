@@ -77,7 +77,7 @@ void _2xpm_555(void *SrcPtr, void *DstPtr, unsigned long SrcPitch, unsigned long
 	unsigned long x, y;
 	unsigned char *src, *dest;			
 	unsigned short int PA, PB, PC, PD, PE, PF, PG, PH, PI;
-	register unsigned short int *start_addr1, *start_addr2, *start_addr3;
+	unsigned short int *start_addr1, *start_addr2, *start_addr3;
 	unsigned long next_line, next_line_src;	
 	unsigned short int *dst_pixel;
 	unsigned long src_width, src_height;
