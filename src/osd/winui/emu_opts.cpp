@@ -164,9 +164,8 @@ string GetIniDir()
 	if (global_ini.empty())
 		return GetEmuPath() + PATH_SEPARATOR + "ini";
 
-	char dir0[global_ini.length()+2] = { };
-	strcpy(dir0, global_ini.c_str());
-	char* t0 = strtok(dir0, ";");
+	string dir0 = global_ini;
+	char* t0 = strtok(dir0.data(), ";");
 	osd::directory::ptr b = osd::directory::open(t0);
 	if (t0 && b)
 	{ }

@@ -566,11 +566,9 @@ static BOOL AddSoftwarePickerDirs(HWND hwndPicker, LPCSTR pszDirectories, LPCSTR
 	if (!pszDirectories)
 		return false;
 
-	size_t a = strlen(pszDirectories) + 1;
-	char s[a] = { };
+	string s = pszDirectories;
 	string pszNewString;
-	strcpy(s, pszDirectories);
-	LPSTR t1 = strtok(s,";");
+	LPSTR t1 = strtok(s.data(), ";");
 	while (t1)
 	{
 		printf("AddSoftwarePickerDirs: Folder %s\n",t1);fflush(stdout);

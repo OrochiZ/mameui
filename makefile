@@ -91,8 +91,9 @@ NO_USE_PIPEWIRE = 1
 # TARGETOS = windows
 # CROSS_BUILD = 1
 # TOOLCHAIN =
-# OVERRIDE_CC = cc
-# OVERRIDE_CXX = c++
+OVERRIDE_CC = clang
+OVERRIDE_CXX = clang++
+#LDOPTS = -fuse-ld=lld
 # OVERRIDE_LD = ld
 # OVERRIDE_AR = ar
 
