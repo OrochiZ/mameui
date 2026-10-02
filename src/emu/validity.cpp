@@ -2067,8 +2067,8 @@ void validity_checker::validate_driver(device_t &root)
 		osd_printf_error("Driver is a clone of itself\n");
 
 	// look for clones that are too deep
-	if (clone_of != -1 && (clone_of = driver_list::non_bios_clone(clone_of)) != -1)
-		osd_printf_error("Driver is a clone of a clone\n");
+	//Oro if (clone_of != -1 && (clone_of = driver_list::non_bios_clone(clone_of)) != -1)
+	//	osd_printf_error("Driver is a clone of a clone\n");
 
 	// look for drivers specifying a parent ROM device type
 	if (root.type().parent_rom_device_type())
@@ -2208,8 +2208,8 @@ void validity_checker::validate_roms(device_t &root)
 			if (ROMENTRY_ISREGION(romp)) // if this is a region, make sure it's valid, and record the length
 			{
 				// if we haven't seen any items since the last region, print a warning
-				if (items_since_region == 0)
-					osd_printf_warning("Empty ROM region '%s' (warning)\n", last_region_name);
+				//Oro if (items_since_region == 0)
+				//	osd_printf_warning("Empty ROM region '%s' (warning)\n", last_region_name);
 
 				// reset our region tracking states
 				char const *const basetag = romp->name;
@@ -2312,8 +2312,8 @@ void validity_checker::validate_roms(device_t &root)
 		}
 
 		// if we haven't seen any items since the last region, print a warning
-		if (items_since_region == 0)
-			osd_printf_warning("Empty ROM region '%s' (warning)\n", last_region_name);
+		//Oro if (items_since_region == 0)
+		//	osd_printf_warning("Empty ROM region '%s' (warning)\n", last_region_name);
 
 		// check that default BIOS exists
 		if (defbios && (bios_names.find(defbios) == bios_names.end()))
@@ -2326,8 +2326,8 @@ void validity_checker::validate_roms(device_t &root)
 			osd_printf_error("BIOS %d set on file is higher than maximum system BIOS number %d\n", max_bios - 1, last_bios - 1);
 
 		// final check for empty regions
-		if (items_since_region == 0)
-			osd_printf_warning("Empty ROM region '%s' (warning)\n", last_region_name);
+		//Oro if (items_since_region == 0)
+		//	osd_printf_warning("Empty ROM region '%s' (warning)\n", last_region_name);
 
 		// reset the current device
 		m_current_device = nullptr;

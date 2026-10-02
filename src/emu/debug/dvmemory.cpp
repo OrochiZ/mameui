@@ -960,6 +960,39 @@ void debug_view_memory::write(u8 size, offs_t offs, u64 data)
 			space = &source.m_memintf->space(source.m_spacenum);
 		else if (!source.m_memintf->translate(source.m_spacenum, device_memory_interface::TR_WRITE, offs, space))
 			return;
+
+		// Oro: write-only ROM windows (mapped ROM with no write handler): patch the
+		// backing memory_region directly so ROM can be edited from the memory view.
+		// Assumes the ROM window is identity-mapped to the region (cart ROM at offset 0).
+		if (space->get_read_ptr(offs) && !space->get_write_ptr(offs))
+		{
+			std::string dtag(space->device().tag());
+			if (!dtag.empty() && dtag[0] == ':')
+				dtag.erase(0, 1);
+			for (auto const &rp : machine().memory().regions())
+			{
+				memory_region *region = rp.second.get();
+				if (!region || region->bytes() == 0)
+					continue;
+				std::string const &rname = rp.first;
+				bool const match = (rname == dtag) ||
+					(rname.size() > dtag.size() + 1
+					&& rname.compare(rname.size() - dtag.size() - 1, dtag.size() + 1, ":" + dtag) == 0);
+				if (!match)
+					continue;
+				offs_t const byteoffs = space->address_to_byte(offs);
+				if (byteoffs + size > region->bytes())
+					continue;
+				bool const bigendian = (space->endianness() == ENDIANNESS_BIG);
+				for (u8 i = 0; i < size; i++)
+				{
+					unsigned const shift = 8 * (bigendian ? (size - 1 - i) : i);
+					region->base()[byteoffs + i] = u8((data >> shift) & 0xff);
+				}
+				return;
+			}
+		}
+
 		m_expression.context().write_memory(*space, offs, data, size, false);
 		return;
 	}

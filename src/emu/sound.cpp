@@ -1284,6 +1284,10 @@ void sound_manager::reset()
 void sound_manager::pause()
 {
 	mute(true, MUTE_REASON_PAUSE);
+	// clear the osd looping buffers: paused emulation feeds no samples and
+	// a looping directsound buffer would otherwise repeat the last tail
+	for(auto &stream : m_osd_output_streams)
+		machine().osd().sound_stream_sink_flush(stream.m_id);
 }
 
 

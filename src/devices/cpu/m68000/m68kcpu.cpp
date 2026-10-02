@@ -25,6 +25,7 @@ static const char copyright_notice[] =
 /* ======================================================================== */
 
 #include "emu.h"
+#include "emuopts.h"
 #include "m68kmusashi.h"
 #include "m68kdasm.h"
 
@@ -997,8 +998,12 @@ void m68000_musashi_device::execute_run()
 			{
 				if (error==10)
 				{
-					m_address_error = 1;
-					goto check_address_error;
+					/* nochk68k: swallow the address error, execution continues at the current PC */
+					if (!machine().options().nochk68k())
+					{
+						m_address_error = 1;
+						goto check_address_error;
+					}
 				}
 				else
 					throw;

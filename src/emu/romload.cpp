@@ -514,8 +514,7 @@ void rom_load_manager::count_roms()
 void rom_load_manager::fill_random(u8 *base, u32 length)
 {
 	while (length--)
-		//*base++ = machine().rand();
-		*base++ = 0xFF;
+		*base++ = machine().rand();
 }
 
 

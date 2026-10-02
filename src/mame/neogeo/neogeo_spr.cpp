@@ -390,7 +390,11 @@ void neosprite_base_device::draw_sprites(bitmap_rgb32 &bitmap, int scanline)
 			u16 zoom_x_table = zoom_x_tables[zoom_x];
 
 			/* compute offset in gfx ROM and mask it to the number of bits available */
-			int gfx_base = ((code << 8) | (sprite_y << 4)) & m_sprite_gfx_address_mask;
+			int gfx_base = ((code << 8) | (sprite_y << 4));
+			// Oro: clamp out-of-range blocks to 0 for non-power-of-2 hack regions
+			if (m_clamp_oob_sprites && (u32(gfx_base) >= m_region_sprites_size * 2))
+				gfx_base = 0;
+			gfx_base &= m_sprite_gfx_address_mask;
 
 			const pen_t *line_pens = &m_pens[attr >> 8 << m_bppshift];
 
@@ -618,12 +622,15 @@ void neosprite_regular_device::set_sprite_region(u8* region_sprites, u32 region_
 	const u32 mask = get_region_mask(m_region_sprites, m_region_sprites_size);
 	const u32 proper_size = (mask + 1) >>1;
 
-	printf("lengths %08x %08x m_region_sprites", region_sprites_size, proper_size);
+	//Oro printf("lengths %08x %08x m_region_sprites", region_sprites_size, proper_size);
 
+	// Oro: allow non-power-of-2 regions (hack carts); out-of-range sprite blocks are clamped at draw time
 	if (m_region_sprites_size != proper_size)
-	{
-		fatalerror("please use power of 2 region sizes with neosprite_base_device to ensure masking works correctly");
-	}
+		m_clamp_oob_sprites = true;
+	//if (m_region_sprites_size != proper_size)
+	//{
+	//	fatalerror("please use power of 2 region sizes with neosprite_base_device to ensure masking works correctly");
+	//}
 
 	m_sprite_gfx_address_mask = mask;
 }

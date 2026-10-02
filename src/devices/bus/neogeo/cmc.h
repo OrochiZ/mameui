@@ -189,6 +189,32 @@ DECLARE_DEVICE_TYPE(NEOGEO_CMC_KOF2001_CART, neogeo_cmc_kof2001_cart_device)
 
 
 /*************************************************
+ kof2000s / kof2001s (Oro: hack sets, C ROMs already
+ decrypted - M1 cmc50 decrypt + sfix only)
+**************************************************/
+
+class neogeo_cmc_kof2000s_cart_device : public neogeo_cmc_cart_device
+{
+public:
+	neogeo_cmc_kof2000s_cart_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+	virtual void decrypt_all(DECRYPT_ALL_PARAMS) override;
+	virtual int get_fixed_bank_type() override { return 2; }
+};
+
+DECLARE_DEVICE_TYPE(NEOGEO_CMC_KOF2000S_CART, neogeo_cmc_kof2000s_cart_device)
+
+class neogeo_cmc_kof2001s_cart_device : public neogeo_cmc_cart_device
+{
+public:
+	neogeo_cmc_kof2001s_cart_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+	virtual void decrypt_all(DECRYPT_ALL_PARAMS) override;
+	virtual int get_fixed_bank_type() override { return 1; }
+};
+
+DECLARE_DEVICE_TYPE(NEOGEO_CMC_KOF2001S_CART, neogeo_cmc_kof2001s_cart_device)
+
+
+/*************************************************
  kof2000n
 **************************************************/
 

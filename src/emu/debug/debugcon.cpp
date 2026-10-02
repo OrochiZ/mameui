@@ -70,6 +70,9 @@ debugger_console::debugger_console(running_machine &machine)
 	/* request callback upon exiting */
 	m_machine.add_notifier(MACHINE_NOTIFY_EXIT, machine_notify_delegate(&debugger_console::exit, this));
 
+	/* Oro: dump region / memory-block base addresses once regions are registered */
+	m_machine.add_notifier(MACHINE_NOTIFY_RESET, machine_notify_delegate(&debugger_console::print_bases, this));
+
 	/* listen in on the errorlog */
 	using namespace std::placeholders;
 	m_machine.add_logerror_callback(std::bind(&debugger_console::errorlog_write_line, this, _1));
@@ -110,6 +113,36 @@ void debugger_console::exit()
 
 	// close the logfile, if any
 	m_logfile.reset();
+}
+
+
+//-------------------------------------------------
+//  Oro: print_bases - dump memory region and
+//  memory save-entry base addresses once, to make
+//  absolute-pointer ROM hacking easier
+//-------------------------------------------------
+
+void debugger_console::print_bases()
+{
+	if (m_printed_bases)
+		return;
+	m_printed_bases = true;
+
+	char addrbuf[32];
+	printf("Oro: memory regions / memory save-entry base addresses:\n");
+	for (auto const &rp : m_machine.memory().regions())
+	{
+		snprintf(addrbuf, sizeof(addrbuf), "%p", reinterpret_cast<void *>(rp.second->base()));
+		printf("Region '%s' = %s (%08X)\n", rp.first.c_str(), addrbuf, rp.second->bytes());
+	}
+	for (auto const &e : m_machine.save().entries())
+	{
+		if (e->m_name.compare(0, 7, "memory/") == 0)
+		{
+			snprintf(addrbuf, sizeof(addrbuf), "%p", e->m_data);
+			printf("%s = %s\n", e->m_name.c_str(), addrbuf);
+		}
+	}
 }
 
 

@@ -100,11 +100,7 @@ void lynx_state::lynx(machine_config &config)
 	m_sound->add_route(ALL_OUTPUTS, "mono", 0.50);
 
 	/* devices */
-	//QUICKLOAD(config, "quickload", "o").set_load_callback(FUNC(lynx_state::quickload_cb));
-	quickload_image_device &quik(QUICKLOAD(config, "quickload", "o", attotime::from_seconds(1)));
-	quik.set_load_callback(FUNC(lynx_state::quickload_cb));
-	quik.set_interface("lynx_quik");
-	SOFTWARE_LIST(config, "quik_list").set_original("lynx_quik");
+	QUICKLOAD(config, "quickload", "o").set_load_callback(FUNC(lynx_state::quickload_cb));
 
 	generic_cartslot_device &cartslot(GENERIC_CARTSLOT(config, "cartslot", generic_plain_slot, "lynx_cart", "lnx,lyx"));
 	cartslot.set_must_be_loaded(true);

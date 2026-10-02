@@ -583,7 +583,6 @@ mips/mips_r3030.cpp
 misc/3do.cpp
 misc/adi_vt52.cpp
 misc/ctvboy.cpp
-misc/cybervision.cpp
 misc/daphor32.cpp
 misc/deecoseal.cpp
 misc/ds2000.cpp
@@ -591,7 +590,6 @@ misc/eva.cpp
 misc/ez2d.cpp
 misc/h01x.cpp
 misc/jaminator.cpp
-misc/macbug.cpp
 misc/mcm70.cpp
 misc/microbox2.cpp
 misc/mindset.cpp

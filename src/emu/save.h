@@ -310,6 +310,9 @@ public:
 	save_error write_buffer(void *buf, size_t size);
 	save_error read_buffer(const void *buf, size_t size);
 
+	// Oro: enumerate registered state entries (debugger startup info)
+	std::vector<std::unique_ptr<state_entry>> const &entries() const { return m_entry_list; }
+
 private:
 	// state callback item
 	class state_callback

@@ -93,6 +93,7 @@ protected:
 	u16     m_vram_modulo = 0;
 
 	u32     m_sprite_gfx_address_mask = 0;
+	bool    m_clamp_oob_sprites = false;  // Oro: clamp out-of-range sprite blocks (non-power-of-2 hack regions)
 
 	u8      m_auto_animation_speed = 0;
 	u8      m_auto_animation_disabled = 0;

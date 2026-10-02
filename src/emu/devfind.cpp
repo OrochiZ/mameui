@@ -249,7 +249,8 @@ bool finder_base::report_missing(bool found, const char *objname, bool required)
 		if (required)
 			osd_printf_error("Required %s '%s' not found\n", objname, region_fulltag);
 		else if (DUMMY_TAG != m_tag)
-			osd_printf_verbose("Optional %s '%s' not found\n", objname, region_fulltag);
+			//Oro osd_printf_verbose("Optional %s '%s' not found\n", objname, region_fulltag);
+			;
 		return !required;
 	}
 }

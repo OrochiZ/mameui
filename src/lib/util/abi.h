@@ -76,7 +76,7 @@
 /// specify that the calling convention for non-static member functions
 /// should be used.
 #if defined(__GNUC__) && defined(__MINGW32__) && !defined(__x86_64__) && defined(__i386__)
-	#define MAME_ABI_CXX_MEMBER_CALL __thiscall
+	#define MAME_ABI_CXX_MEMBER_CALL
 #else
 	#define MAME_ABI_CXX_MEMBER_CALL
 #endif

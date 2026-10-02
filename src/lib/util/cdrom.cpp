@@ -2491,11 +2491,9 @@ std::error_condition cdrom_file::parse_cue(std::string_view tocfname, toc &outto
 			}
 			else
 			{
-				//fclose(infile);    // MESSUI
-				//osd_printf_error("ERROR: Unhandled track type %s\n", token);
-				//return chd_file::error::UNSUPPORTED_FORMAT;
-				printf("ERROR: Track %02d: Unhandled track type %s\n", trknum+2,token);   // MESSUI
-				goto nextpart;   // MESSUI
+				fclose(infile);
+				osd_printf_error("ERROR: Unhandled track type %s\n", token);
+				return chd_file::error::UNSUPPORTED_FORMAT;
 			}
 		}
 		else if (!strcmp(token, "TRACK"))
@@ -2647,7 +2645,7 @@ std::error_condition cdrom_file::parse_cue(std::string_view tocfname, toc &outto
 			}
 		}
 	}
-	nextpart: printf("TOTAL TRACKS = %d\n",trknum+1);  // MESSUI
+
 	/* close the input CUE */
 	fclose(infile);
 

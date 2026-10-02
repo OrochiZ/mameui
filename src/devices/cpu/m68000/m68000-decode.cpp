@@ -767,6 +767,8 @@ const m68000_device::decode_entry m68000_device::s_packed_decode_table[] = {
 	{ 0x4e75, 0xffff,  768 },
 	{ 0x4e76, 0xffff,  769 },
 	{ 0x4e77, 0xffff,  770 },
+	{ 0x4e7c, 0xffff,  768 },  // Oro: hack carts execute 4e7c as RTS (alias of 4e75)
+	{ 0x4e7d, 0xffff,  765 },  // Oro: hack carts execute 4e7d as NOP (alias of 4e71)
 	{ 0x4e90, 0xfff8,  771 },
 	{ 0x4ea8, 0xfff8,  772 },
 	{ 0x4eb0, 0xfff8,  773 },

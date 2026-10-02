@@ -51,7 +51,6 @@ After load completes, G440 to run.
 #include "imagedev/snapquik.h"
 #include "machine/timer.h"
 #include "speaker.h"
-#include "softlist_dev.h"
 
 
 namespace {
@@ -211,11 +210,7 @@ void pipbug_state::pipbug(machine_config &config)
 	m_rs232->set_option_device_input_defaults("terminal", DEVICE_INPUT_DEFAULTS_NAME(terminal));
 
 	/* quickload */
-	//QUICKLOAD(config, "quickload", "pgm", attotime::from_seconds(1)).set_load_callback(FUNC(pipbug_state::quickload_cb));
-	quickload_image_device &snapshot(QUICKLOAD(config, "quickload", "pgm", attotime::from_seconds(1)));
-	snapshot.set_load_callback(FUNC(pipbug_state::quickload_cb));
-	snapshot.set_interface("pipbug_quik");
-	SOFTWARE_LIST(config, "pipbug_quik").set_original("pipbug_quik");
+	QUICKLOAD(config, "quickload", "pgm", attotime::from_seconds(1)).set_load_callback(FUNC(pipbug_state::quickload_cb));
 
 	SPEAKER(config, "mono").front_center();
 
@@ -223,8 +218,6 @@ void pipbug_state::pipbug(machine_config &config)
 	CASSETTE(config, m_cass);
 	m_cass->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
 	m_cass->add_route(ALL_OUTPUTS, "mono", 0.05);
-	m_cass->set_interface("pipbug_cass");
-	SOFTWARE_LIST(config, "pipbug_cass").set_original("pipbug_cass");
 	TIMER(config, "kansas_r").configure_periodic(FUNC(pipbug_state::kansas_r), attotime::from_hz(40000));
 }
 

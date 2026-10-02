@@ -995,7 +995,7 @@ apple2gsr3p
 apple3
 
 @source:apple/imacg3.cpp
-//imac                        //crash after start sound
+imac
 
 @source:apple/iphone2g.cpp
 iphone2g
@@ -15510,6 +15510,7 @@ captcommj
 captcommjr1
 captcommr1
 captcommu
+captcommz
 cawing
 cawingj
 cawingjr
@@ -15524,10 +15525,12 @@ cworld2jb
 daimakai
 daimakair
 dino
+dinoboss
 dinohunt
 dinoa
 dinoj
 dinou
+dinoz
 dynwar
 dynwara
 dynwarj
@@ -15562,6 +15565,7 @@ knights
 knightsb2
 knightsj
 knightsja
+knightsp
 knightsu
 kod
 kodj
@@ -15601,8 +15605,10 @@ pang3b5
 pmonster
 pnickj
 punisher
+punisher23
 punisherbz
 punisherh
+punisherhack
 punisherj
 punisheru
 qad
@@ -15719,9 +15725,15 @@ willowu
 willowuo
 wof
 wofa
+wofaboss
 wofch
+wofcn
+wofff
 wofhfh
 wofj
+wofjh
+wofjm
+wofjmc
 wofr1
 wofu
 wonder3
@@ -20625,7 +20637,7 @@ tpad760xd
 tpad770z
 
 @source:ibm/thinkpad8xx.cpp
-tpad850                   //no screen, giant error log
+tpad850
 
 @source:ice/calchase.cpp
 calchase
@@ -24834,7 +24846,7 @@ circusce
 
 @source:konami/cobra.cpp
 bujutsu
-//racjamdx    crashes
+racjamdx
 
 @source:konami/combatsc.cpp
 bootcamp
@@ -30452,9 +30464,6 @@ cwheel
 @source:misc/cybertnk.cpp
 cybertnk
 
-@source:misc/cybervision.cpp
-cybervision
-
 @source:misc/daphor32.cpp
 daphor32
 
@@ -32059,9 +32068,6 @@ luckybalb
 luckybalc
 luckybald
 luckybale
-
-@source:misc/macbug.cpp
-macbug
 
 @source:misc/magic10.cpp
 altaten
@@ -34943,7 +34949,7 @@ ncd19c
 ncdmcx
 
 @source:ncd/ncdmips.cpp
-//hmxpro                    //freeze after a while
+hmxpro
 
 @source:ncd/ncdppc.cpp
 explorapro
@@ -35105,6 +35111,7 @@ ctomaday
 cyberlip
 diggerma
 doubledr
+doubledrsp
 dragonsh
 eightman
 fatfursp
@@ -35142,10 +35149,16 @@ joyjoy
 kabukikl
 karnovr
 kf10thep
+kf2k1ae
+kf2k1ar
+kf2k2ext
 kf2k2mp
 kf2k2mp2
 kf2k2pla
 kf2k2pls
+kf2k2ps2
+kf2k2ps2re
+kf2k2ru
 kf2k3bl
 kf2k3bla
 kf2k3pl
@@ -35156,36 +35169,70 @@ kizuna4p
 kof10th
 kof2000
 kof2000n
+kof2000s
 kof2001
 kof2001h
+kof2001s
 kof2002
 kof2002b
 kof2003
 kof2003h
+kof2k2nd
+kof2k2ndb
+kof2k2p7
+kof2k2plus2017
 kof2k4se
+kof2kps2
 kof94
 kof95
 kof95a
 kof95h
+kof95sp
 kof96
 kof96a
+kof96ae
+kof96cn
 kof96h
 kof97
 kof97h
 kof97k
+kof97ae
+kof97cn
+kof97ext
+kof97m
 kof97oro
+kof97p9ca
+kof97xt
 kof97pls
+kof97sp
+kof97spe
 kof98
+kof98_4s
 kof98a
+kof98ae
+kof98c
+kof98cp
+kof98ds
+kof98ext
 kof98h
 kof98k
 kof98ka
+kof98p9ca
+kof98pfe
+kof98pfes
+kof98sp
 kof99
+kof99ae
 kof99e
+kof99ext
 kof99h
 kof99k
 kof99ka
+kof99nd
 kof99p
+kof99p9ca
+kofallmix
+kofallmixs
 kog
 kotm
 kotm2
@@ -35195,6 +35242,7 @@ kotmh
 lans2004
 lastblad
 lastbladh
+lastbladsp
 lastbld2
 lasthope
 lastsold
@@ -35284,6 +35332,7 @@ samsho
 samsho2
 samsho2k
 samsho2ka
+samsho2sp
 samsho3
 samsho3h
 samsho4
@@ -36930,7 +36979,6 @@ hk1000
 xm200
 
 @source:osborne/osbexec.cpp
-jantar
 osbexec
 
 @source:osborne/osborne1.cpp
@@ -37580,7 +37628,7 @@ ibm5160
 
 @source:pc/ibmpcjr.cpp
 ibmpcjr
-//ibmpcjx                       //very likely to crash at start
+ibmpcjx
 
 @source:pc/iskr103x.cpp
 iskr1030m
@@ -44069,7 +44117,7 @@ fs3216
 ft68m
 
 @source:skeleton/gamebox.cpp
-gamebox                        // freeze while loading huge rom, then black screen
+gamebox
 
 @source:skeleton/ganbaremo.cpp
 ganbaremo
@@ -44647,7 +44695,7 @@ mjxy2
 vp415
 
 @source:skeleton/webtouchone.cpp
-wto2840sp                        //black screen, giant error log
+wto2840sp
 
 @source:skeleton/xbase09.cpp
 xbase09
@@ -45240,8 +45288,8 @@ sun3_80
 sun3_460
 
 @source:sun/sun4.cpp
-//sun_s10                     //crash at start
-//sun_s20                     //crash at start
+sun_s10
+sun_s20
 sun4_20
 sun4_25
 sun4_110

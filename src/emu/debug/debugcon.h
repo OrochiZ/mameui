@@ -148,6 +148,8 @@ public:
 
 private:
 	void exit();
+	void print_bases();           // Oro: dump region / memory-block base addresses
+	bool m_printed_bases = false; // Oro
 
 	void execute_help_custom(const std::vector<std::string_view> &params);
 	void execute_condump(const std::vector<std::string_view>& params);

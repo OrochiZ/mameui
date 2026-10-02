@@ -1237,6 +1237,17 @@ static const struct gfx_range mapper_CC63B_table[] =
 	{ 0 }
 };
 
+// Oro: hack mapper used by captcommz (4 banks, all types)
+#define mapper_CC63Z	{ 0x8000, 0x8000, 0x8000, 0x8000 }, mapper_CC63Z_table
+static const struct gfx_range mapper_CC63Z_table[] =
+{
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x0000, 0x7fff, 0 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x8000, 0xffff, 1 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x10000, 0x17fff, 2 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x18000, 0x1ffff, 3 },
+	{ 0 }
+};
+
 
 #define mapper_KR63B    { 0x8000, 0x8000, 0, 0 }, mapper_KR63B_table
 static const struct gfx_range mapper_KR63B_table[] =
@@ -1383,6 +1394,17 @@ static const struct gfx_range mapper_TK263B_table[] =
 	{ 0 }
 };
 
+// Oro: hack mapper used by the wof "Z" hack family (4 banks, all types)
+#define mapper_TK263Z   { 0x8000, 0x8000, 0x8000, 0x8000 }, mapper_TK263Z_table
+static const struct gfx_range mapper_TK263Z_table[] =
+{
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x07fff, 0 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x08000, 0x0ffff, 1 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x10000, 0x17fff, 2 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x18000, 0x1ffff, 3 },
+	{ 0 }
+};
+
 
 #define mapper_CD63B    { 0x8000, 0x8000, 0, 0 }, mapper_CD63B_table
 static const struct gfx_range mapper_CD63B_table[] =
@@ -1395,6 +1417,17 @@ static const struct gfx_range mapper_CD63B_table[] =
 	// type                                                                  start    end      bank
 	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x07fff, 0 },
 	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x08000, 0x0ffff, 1 },
+	{ 0 }
+};
+
+// Oro: hack mapper used by dinoz/dinoboss (4 banks, all types)
+#define mapper_CD63Z    { 0x8000, 0x8000, 0x8000, 0x8000 }, mapper_CD63Z_table
+static const struct gfx_range mapper_CD63Z_table[] =
+{
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x07fff, 0 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x08000, 0x0ffff, 1 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x10000, 0x17fff, 2 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x18000, 0x1ffff, 3 },
 	{ 0 }
 };
 
@@ -1889,12 +1922,14 @@ static const struct CPS1config cps1_config_table[]=
 	{"kodb",        CPS_B_21_BT2, mapper_KD29B,  0x36, 0, 0x34 },   // bootleg, doesn't use multiply protection
 	{"captcomm",    CPS_B_21_BT3, mapper_CC63B,  0x36, 0x38, 0x34 },
 	{"captcommr1",  CPS_B_21_BT3, mapper_CC63B,  0x36, 0x38, 0x34 },
+	{"captcommz",   CPS_B_21_BT3, mapper_CC63Z,  0x36, 0x38, 0x34 },
 	{"captcommu",   CPS_B_21_BT3, mapper_CC63B,  0x36, 0x38, 0x34 },
 	{"captcommj",   CPS_B_21_BT3, mapper_CC63B,  0x36, 0x38, 0x34 },
 	{"captcommjr1", CPS_B_21_BT3, mapper_CC63B,  0x36, 0x38, 0x34 },
 	{"captcommb",   CPS_B_21_BT3, mapper_CC63B,  0x36, 0x38, 0x34, 0x43 },
 	{"captcommb2",  CPS_B_21_BT4, mapper_CC63B },  // junk around health bar with default cps2 mapper, uses BT4(knights) config
 	{"knights",     CPS_B_21_BT4, mapper_KR63B,  0x36, 0, 0x34 },
+	{"knightsp",    CPS_B_21_BT4, mapper_KR63B,  0x36, 0, 0x34 },
 	{"knightsu",    CPS_B_21_BT4, mapper_KR63B,  0x36, 0, 0x34 },
 	{"knightsj",    CPS_B_21_BT4, mapper_KR63B,  0x36, 0, 0x34 },
 	{"knightsja",   CPS_B_21_BT4, mapper_KR22B,  0x36, 0, 0x34 },
@@ -1975,12 +2010,20 @@ static const struct CPS1config cps1_config_table[]=
 	{"wof",         CPS_B_21_QS1, mapper_TK263B },
 	{"wofr1",       CPS_B_21_DEF, mapper_TK263B },
 	{"wofa",        CPS_B_21_DEF, mapper_TK263B },  // patched set coming from a desuicided board?
+	{"wofaboss",    CPS_B_21_DEF, mapper_TK263Z },
 	{"wofu",        CPS_B_21_QS1, mapper_TK263B },
 	{"wofj",        CPS_B_21_QS1, mapper_TK263B },
+	{"wofjh",       CPS_B_21_QS1, mapper_TK263Z },
+	{"wofjm",       CPS_B_21_QS1, mapper_TK263Z },
+	{"wofjmc",      CPS_B_21_QS1, mapper_TK263Z },
+	{"wofff",       CPS_B_21_QS1, mapper_TK263Z },
+	{"wofcn",       CPS_B_21_QS1, mapper_TK263B },
 	{"wofhfh",      CPS_B_21_DEF, mapper_TK263B, 0x36 },    // Chinese bootleg
 	{"wofpic",      CPS_B_21_DEF, mapper_TK263B, 0x36 },
 	{"wofr1bl",     CPS_B_21_DEF, mapper_TK263B, 0x36 },
 	{"dino",        CPS_B_21_QS2, mapper_CD63B },   // layer enable never used
+	{"dinoz",       CPS_B_21_QS2, mapper_CD63Z },   // layer enable never used
+	{"dinoboss",    CPS_B_21_QS2, mapper_CD63Z },   // layer enable never used
 	{"dinou",       CPS_B_21_QS2, mapper_CD63B },   // layer enable never used
 	{"dinoj",       CPS_B_21_QS2, mapper_CD63B },   // layer enable never used
 	{"dinoa",       CPS_B_21_QS2, mapper_CD63B },   // layer enable never used
@@ -1988,6 +2031,8 @@ static const struct CPS1config cps1_config_table[]=
 	{"dinopic2",    CPS_B_21_QS2, mapper_CD63B },   // layer enable never used
 	{"dinohunt",    CPS_B_21_DEF, mapper_CD63B },   // Chinese bootleg
 	{"punisher",    CPS_B_21_QS3, mapper_PS63B },
+	{"punisherhack",CPS_B_21_QS3, mapper_PS63B },
+	{"punisher23",  CPS_B_21_QS3, mapper_PS63B },
 	{"punisheru",   CPS_B_21_QS3, mapper_PS63B },
 	{"punisherh",   CPS_B_21_QS3, mapper_PS63B },
 	{"punisherj",   CPS_B_21_QS3, mapper_PS63B },
@@ -2664,19 +2709,9 @@ void cps_state::cps1_build_palette(const uint16_t* const palette_base)
 				// component is set to 0 it should reduce brightness to 1/3
 				bright = 0x0f + ((palette >> 12) << 1);
 
-				// MAMEFX start, Robbbert
-				//r = ((palette >> 8) & 0x0f) * 0x11 * bright / 0x2d;
-				//g = ((palette >> 4) & 0x0f) * 0x11 * bright / 0x2d;
-				//b = ((palette >> 0) & 0x0f) * 0x11 * bright / 0x2d;
-
-				// Code to get rid of grey squares
-				r = BIT(palette, 8, 4);
-				g = BIT(palette, 4, 4);
-				b = BIT(palette, 0, 4);
-				r = (r > 1) ? r * 0x11 * bright / 0x2d : 0;
-				g = (g > 1) ? g * 0x11 * bright / 0x2d : 0;
-				b = (b > 1) ? b * 0x11 * bright / 0x2d : 0;
-				// MAMEFX end
+				r = ((palette >> 8) & 0x0f) * 0x11 * bright / 0x2d;
+				g = ((palette >> 4) & 0x0f) * 0x11 * bright / 0x2d;
+				b = ((palette >> 0) & 0x0f) * 0x11 * bright / 0x2d;
 
 				m_palette->set_pen_color(0x200 * page + offset, rgb_t(r, g, b));
 			}

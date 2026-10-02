@@ -227,6 +227,42 @@ void neogeo_cmc_kof2001_cart_device::decrypt_all(DECRYPT_ALL_PARAMS)
 }
 
 /*************************************************
+ kof2000s (Oro: hack set, C ROMs already decrypted)
+ old fork kof2000d = gfxdec50 (sfix + bank type 2 only) + cmc50_m1
+**************************************************/
+
+DEFINE_DEVICE_TYPE(NEOGEO_CMC_KOF2000S_CART, neogeo_cmc_kof2000s_cart_device, "neocart_kof2000s", "Neo Geo KoF 2000S CMC50 Cart")
+
+neogeo_cmc_kof2000s_cart_device::neogeo_cmc_kof2000s_cart_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
+	neogeo_cmc_cart_device(mconfig, NEOGEO_CMC_KOF2000S_CART, tag, owner, clock)
+{
+}
+
+void neogeo_cmc_kof2000s_cart_device::decrypt_all(DECRYPT_ALL_PARAMS)
+{
+	m_prot->cmc50_m1_decrypt(audiocrypt_region, audiocrypt_region_size, audiocpu_region, audio_region_size);
+	m_prot->sfix_decrypt(spr_region, spr_region_size, fix_region, fix_region_size);
+}
+
+/*************************************************
+ kof2001s (Oro: hack set, C ROMs already decrypted)
+ old fork kof2001d = gfxdec42 (sfix + bank type 1 only) + cmc50_m1
+**************************************************/
+
+DEFINE_DEVICE_TYPE(NEOGEO_CMC_KOF2001S_CART, neogeo_cmc_kof2001s_cart_device, "neocart_kof2001s", "Neo Geo KoF 2001S CMC50 Cart")
+
+neogeo_cmc_kof2001s_cart_device::neogeo_cmc_kof2001s_cart_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock) :
+	neogeo_cmc_cart_device(mconfig, NEOGEO_CMC_KOF2001S_CART, tag, owner, clock)
+{
+}
+
+void neogeo_cmc_kof2001s_cart_device::decrypt_all(DECRYPT_ALL_PARAMS)
+{
+	m_prot->cmc50_m1_decrypt(audiocrypt_region, audiocrypt_region_size, audiocpu_region, audio_region_size);
+	m_prot->sfix_decrypt(spr_region, spr_region_size, fix_region, fix_region_size);
+}
+
+/*************************************************
  kof2000n
 **************************************************/
 

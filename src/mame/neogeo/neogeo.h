@@ -74,6 +74,23 @@ protected:
 		, m_ctrl2(*this, "ctrl2")
 		, m_slots(*this, "cslot%u", 1U)
 		, m_audionmi(*this, "audionmi")
+		// Oro: extra audio units for hack boards (dual/quad sound)
+		, m_audiocpu2(*this, "audiocpu2")
+		, m_ymsnd2(*this, "ymsnd2")
+		, m_soundlatch_cmd2(*this, "sndcmd2")
+		, m_soundlatch_res2(*this, "sndres2")
+		, m_audiocpu_m2(*this, "audiocpu_m2")
+		, m_ymsnd_m2(*this, "ymsnd_m2")
+		, m_soundlatch_cmd_m2(*this, "sndcmd_m2")
+		, m_soundlatch_res_m2(*this, "sndres_m2")
+		, m_audiocpu_m3(*this, "audiocpu_m3")
+		, m_ymsnd_m3(*this, "ymsnd_m3")
+		, m_soundlatch_cmd_m3(*this, "sndcmd_m3")
+		, m_soundlatch_res_m3(*this, "sndres_m3")
+		, m_audiocpu_m4(*this, "audiocpu_m4")
+		, m_ymsnd_m4(*this, "ymsnd_m4")
+		, m_soundlatch_cmd_m4(*this, "sndcmd_m4")
+		, m_soundlatch_res_m4(*this, "sndres_m4")
 	{ }
 
 	uint16_t memcard_r(offs_t offset, uint16_t mem_mask = ~0);
@@ -116,6 +133,29 @@ protected:
 	void audio_io_map(address_map &map) ATTR_COLD;
 	void audio_map(address_map &map) ATTR_COLD;
 
+	// Oro: extra audio units for hack boards (dual/quad sound)
+	uint8_t audio_cpu_bank_select_r_2(offs_t offset);
+	uint8_t audio_cpu_bank_select_r_m2(offs_t offset);
+	uint8_t audio_cpu_bank_select_r_m3(offs_t offset);
+	uint8_t audio_cpu_bank_select_r_m4(offs_t offset);
+	void audio_command_w_2(uint16_t data);
+	void audio_command_w_m2(uint16_t data);
+	void audio_command_w_m3(uint16_t data);
+	void audio_command_w_m4(uint16_t data);
+	uint16_t get_audio_result_2();
+	uint16_t get_audio_result_m2();
+	uint16_t get_audio_result_m3();
+	uint16_t get_audio_result_m4();
+	void init_extra_audio(const char *regionname, const char *suffix);
+	void audio_map_2(address_map &map) ATTR_COLD;
+	void audio_io_map_2(address_map &map) ATTR_COLD;
+	void audio_map_m2(address_map &map) ATTR_COLD;
+	void audio_io_map_m2(address_map &map) ATTR_COLD;
+	void audio_map_m3(address_map &map) ATTR_COLD;
+	void audio_io_map_m3(address_map &map) ATTR_COLD;
+	void audio_map_m4(address_map &map) ATTR_COLD;
+	void audio_io_map_m4(address_map &map) ATTR_COLD;
+
 	// device overrides
 	virtual void machine_start() override ATTR_COLD;
 	virtual void machine_reset() override ATTR_COLD;
@@ -127,7 +167,7 @@ protected:
 	required_device<cpu_device> m_audiocpu;
 	// MVS-specific devices
 	optional_device<ym2610_device> m_ym;
-	required_device<neosprite_optimized_device> m_sprgen;
+	required_device<neosprite_base_device> m_sprgen;
 
 	required_device<screen_device> m_screen;
 	optional_device<palette_device> m_palette;
@@ -148,6 +188,10 @@ protected:
 	optional_memory_bank   m_bank_audio_main; // optional because of neocd
 	memory_bank           *m_bank_audio_cart[4];
 	memory_bank_creator    m_bank_cartridge;
+
+	// Oro: hack board options (dual/quad sound, on-demand sprite decoding)
+	uint8_t m_ms_comm_layout = 0;  // 0: m2/m3/m4 at 0xbe/0xbc/0xba0000, 1: at 0x321/0x322/0x323000 (neoext)
+	bool m_ms_regular_sprites = false;  // use NEOGEO_SPRITE_REGULAR instead of the pre-converting device
 
 	optional_device<neogeo_ctrl_edge_port_device> m_edge;
 	optional_device<neogeo_control_port_device> m_ctrl1;
@@ -210,6 +254,25 @@ private:
 	uint16_t get_video_control();
 
 	required_device<input_merger_device> m_audionmi;
+
+protected:
+	// Oro: extra audio units for hack boards (dual/quad sound)
+	optional_device<cpu_device> m_audiocpu2;
+	optional_device<ym2610_device> m_ymsnd2;
+	optional_device<generic_latch_8_device> m_soundlatch_cmd2;
+	optional_device<generic_latch_8_device> m_soundlatch_res2;
+	optional_device<cpu_device> m_audiocpu_m2;
+	optional_device<ym2610_device> m_ymsnd_m2;
+	optional_device<generic_latch_8_device> m_soundlatch_cmd_m2;
+	optional_device<generic_latch_8_device> m_soundlatch_res_m2;
+	optional_device<cpu_device> m_audiocpu_m3;
+	optional_device<ym2610_device> m_ymsnd_m3;
+	optional_device<generic_latch_8_device> m_soundlatch_cmd_m3;
+	optional_device<generic_latch_8_device> m_soundlatch_res_m3;
+	optional_device<cpu_device> m_audiocpu_m4;
+	optional_device<ym2610_device> m_ymsnd_m4;
+	optional_device<generic_latch_8_device> m_soundlatch_cmd_m4;
+	optional_device<generic_latch_8_device> m_soundlatch_res_m4;
 
 	// color/palette related
 	std::vector<uint16_t> m_paletteram;

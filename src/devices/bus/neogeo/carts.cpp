@@ -47,6 +47,8 @@ void neogeo_cart(device_slot_interface &device)
 	// only CMC50 for gfx + audiocpu
 	device.option_add_internal("cmc50_kof2001",  NEOGEO_CMC_KOF2001_CART);
 	device.option_add_internal("cmc50_kof2000n", NEOGEO_CMC_KOF2000N_CART);
+	device.option_add_internal("cmc50_kof2000s", NEOGEO_CMC_KOF2000S_CART); // Oro
+	device.option_add_internal("cmc50_kof2001s", NEOGEO_CMC_KOF2001S_CART); // Oro
 	device.option_add_internal("cmc50_jockeygp", NEOGEO_CMC_JOCKEYGP_CART); // CMC50 + RAM
 
 	// These use SMA for prg & CMC42 for gfx
