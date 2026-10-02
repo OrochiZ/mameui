@@ -365,7 +365,8 @@ int running_machine::run(bool quiet)
 
 		// save the NVRAM and configuration
 		sound().ui_mute(true);
-		if (options().nvram_save())
+		// don't save NVRAM over the state that was used for an input recording (MAMEPlus port)
+		if (options().nvram_save() && !ioport().playback_active())
 			nvram_save();
 		m_configuration->save_settings();
 	}

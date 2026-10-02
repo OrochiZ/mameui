@@ -411,6 +411,9 @@ public:
 	// getters
 	running_machine &machine() const { return m_machine; }
 
+	// IPS patch support (MAMEPlus port): accumulate a warning from the IPS loader
+	void ips_warning(std::string_view msg) { m_errorstring.append(msg); m_warnings++; }
+
 	/* return the number of warnings we generated */
 	int warnings() const { return m_warnings; }
 
@@ -503,6 +506,8 @@ private:
 	u64                 m_romstotalsize;      // total size of ROMs to read
 
 	std::vector<std::unique_ptr<open_chd>> m_chd_list;     /* disks */
+
+	void *              m_ips;                // current IPS patch assignment (MAMEPlus port)
 
 	std::string         m_errorstring;        // error string
 	std::string         m_softwarningstring;  // software warning string

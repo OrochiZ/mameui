@@ -53,6 +53,7 @@ const options_entry emu_options::s_option_entries[] =
 	{ OPTION_PLUGINSPATH,                                "plugins",   core_options::option_type::MULTIPATH,  "path to plugin files" },
 	{ OPTION_LANGUAGEPATH,                               "language",  core_options::option_type::MULTIPATH,  "path to UI translation files" },
 	{ OPTION_SWPATH,                                     "software",  core_options::option_type::MULTIPATH,  "path to loose software" },
+	{ OPTION_IPSPATH,                                    "ips",       core_options::option_type::PATH,       "path to IPS patch files" },
 
 	// output directory options
 	{ nullptr,                                           nullptr,     core_options::option_type::HEADER,     "CORE OUTPUT DIRECTORY OPTIONS" },
@@ -74,6 +75,8 @@ const options_entry emu_options::s_option_entries[] =
 	{ OPTION_PLAYBACK ";pb",                             nullptr,     core_options::option_type::STRING,     "playback an input file" },
 	{ OPTION_RECORD ";rec",                              nullptr,     core_options::option_type::STRING,     "record an input file" },
 	{ OPTION_EXIT_AFTER_PLAYBACK,                        "0",         core_options::option_type::BOOLEAN,    "close the program at the end of playback" },
+	{ OPTION_PLAYBACK_END_PAUSE,                         "0",         core_options::option_type::BOOLEAN,    "pause the program at the end of playback" },
+	{ OPTION_IPS,                                        nullptr,     core_options::option_type::STRING,     "apply IPS patch(es) to ROM data, comma separated" },
 
 	{ OPTION_MNGWRITE,                                   nullptr,     core_options::option_type::PATH,       "optional filename to write a MNG movie of the current session" },
 	{ OPTION_AVIWRITE,                                   nullptr,     core_options::option_type::PATH,       "optional filename to write an AVI movie of the current session" },
@@ -123,6 +126,7 @@ const options_entry emu_options::s_option_entries[] =
 	{ OPTION_FALLBACK_ARTWORK,                           nullptr,     core_options::option_type::STRING,     "fallback artwork if no external artwork or internal driver layout defined" },
 	{ OPTION_OVERRIDE_ARTWORK,                           nullptr,     core_options::option_type::STRING,     "override artwork for external artwork and internal driver layout" },
 	{ OPTION_ARTWORK_FONT ";artfont",                    "default",   core_options::option_type::STRING,     "specify a font to use for artwork text elements" },
+	{ OPTION_SCALE_EFFECT,                               "none",      core_options::option_type::STRING,     "image enhancement (scale) effect, one of: none, scanlinestv, epxb, epxc, scale2x, scale3x, 2xsai, super2xsai, supereagle, 2xpm, hq2x, hq2xs, hq2xbold, hq3x, hq3xs, hq3xbold, 2xbrz, 3xbrz" },
 
 	// screen options
 	{ nullptr,                                           nullptr,     core_options::option_type::HEADER,     "CORE SCREEN OPTIONS" },

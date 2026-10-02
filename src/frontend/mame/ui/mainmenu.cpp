@@ -25,6 +25,7 @@
 #include "ui/inputopts.h"
 #include "ui/miscmenu.h"
 #include "ui/pluginopt.h"
+#include "ui/plusmenus.h"
 #include "ui/selgame.h"
 #include "ui/simpleselgame.h"
 #include "ui/sliders.h"
@@ -48,6 +49,9 @@ namespace ui {
 
 enum : unsigned {
 	INPUT_OPTIONS,
+	PLUS_AUTOFIRE,
+	PLUS_CUSTOM_BUTTONS,
+	PLUS_SCALE_EFFECT,
 	SETTINGS_DIP_SWITCHES,
 	SETTINGS_DRIVER_CONFIG,
 	BOOKKEEPING,
@@ -117,6 +121,10 @@ void menu_main::populate()
 
 	item_append(_("menu-main", "Input Settings"), 0, (void *)INPUT_OPTIONS);
 
+	// MAMEPlus port: autofire / custom button menus
+	item_append(_("menu-main", "Autofire Settings"), 0, (void *)PLUS_AUTOFIRE);
+	item_append(_("menu-main", "Custom Buttons"), 0, (void *)PLUS_CUSTOM_BUTTONS);
+
 	if (ui().machine_info().has_dips())
 		item_append(_("menu-main", "DIP Switches"), 0, (void *)SETTINGS_DIP_SWITCHES);
 	if (ui().machine_info().has_configs())
@@ -174,6 +182,9 @@ void menu_main::populate()
 
 	item_append(_("menu-main", "Video Options"), 0, (void *)VIDEO_TARGETS);
 
+	// MAMEPlus port: software scale effect menu
+	item_append(_("menu-main", "Image Enhancement"), 0, (void *)PLUS_SCALE_EFFECT);
+
 	if (machine().crosshair().get_usage())
 		item_append(_("menu-main", "Crosshair Options"), 0, (void *)CROSSHAIR);
 
@@ -229,6 +240,19 @@ bool menu_main::handle(event const *ev)
 		{
 		case INPUT_OPTIONS:
 			menu::stack_push<menu_input_options>(ui(), container());
+			break;
+
+		// MAMEPlus port menus
+		case PLUS_AUTOFIRE:
+			menu::stack_push<menu_autofire>(ui(), container());
+			break;
+
+		case PLUS_CUSTOM_BUTTONS:
+			menu::stack_push<menu_custom_button>(ui(), container());
+			break;
+
+		case PLUS_SCALE_EFFECT:
+			menu::stack_push<menu_scale_effect>(ui(), container());
 			break;
 
 		case SETTINGS_DIP_SWITCHES:

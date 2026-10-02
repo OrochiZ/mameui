@@ -929,6 +929,14 @@ bool mame_ui_manager::update_and_render(render_container &container)
 	if (show_fps_counter())
 		draw_fps_counter(container);
 
+	// draw the input playback caption if one is active (MAMEPlus port)
+	if (machine().phase() >= machine_phase::RESET)
+	{
+		machine().ioport().caption_frame_update();
+		if (std::string const *const caption = machine().ioport().active_caption())
+			draw_text_box(container, *caption, ui::text_layout::text_justify::LEFT, 0.5f, 1.0f, colors().background_color());
+	}
+
 	// call the current UI handler
 	machine().ui_input().check_ui_inputs();
 	uint32_t const handler_result = m_handler_callback(container);

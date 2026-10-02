@@ -38,6 +38,7 @@
 #define OPTION_PLUGINSPATH          "pluginspath"
 #define OPTION_LANGUAGEPATH         "languagepath"
 #define OPTION_SWPATH               "swpath"
+#define OPTION_IPSPATH              "ipspath"
 
 // core directory options
 #define OPTION_CFG_DIRECTORY        "cfg_directory"
@@ -57,6 +58,8 @@
 #define OPTION_PLAYBACK             "playback"
 #define OPTION_RECORD               "record"
 #define OPTION_EXIT_AFTER_PLAYBACK  "exit_after_playback"
+#define OPTION_PLAYBACK_END_PAUSE   "playback_end_pause"
+#define OPTION_IPS                  "ips"
 #define OPTION_MNGWRITE             "mngwrite"
 #define OPTION_AVIWRITE             "aviwrite"
 #define OPTION_WAVWRITE             "wavwrite"
@@ -101,6 +104,7 @@
 #define OPTION_FALLBACK_ARTWORK     "fallback_artwork"
 #define OPTION_OVERRIDE_ARTWORK     "override_artwork"
 #define OPTION_ARTWORK_FONT         "artwork_font"
+#define OPTION_SCALE_EFFECT         "scale_effect"
 
 // core screen options
 #define OPTION_BRIGHTNESS           "brightness"
@@ -343,6 +347,9 @@ public:
 	const char *playback() const { return value(OPTION_PLAYBACK); }
 	const char *record() const { return value(OPTION_RECORD); }
 	bool exit_after_playback() const { return bool_value(OPTION_EXIT_AFTER_PLAYBACK); }
+	bool playback_end_pause() const { return bool_value(OPTION_PLAYBACK_END_PAUSE); }
+	const char *ips() const { return value(OPTION_IPS); }
+	const char *ips_path() const { return value(OPTION_IPSPATH); }
 	const char *mng_write() const { return value(OPTION_MNGWRITE); }
 	const char *avi_write() const { return value(OPTION_AVIWRITE); }
 	const char *wav_write() const { return value(OPTION_WAVWRITE); }
@@ -387,6 +394,7 @@ public:
 	const char *fallback_artwork() const { return value(OPTION_FALLBACK_ARTWORK); }
 	const char *override_artwork() const { return value(OPTION_OVERRIDE_ARTWORK); }
 	const char *artwork_font() const { return value(OPTION_ARTWORK_FONT); }
+	const char *scale_effect() const { return value(OPTION_SCALE_EFFECT); }
 
 	// core screen options
 	float brightness() const { return float_value(OPTION_BRIGHTNESS); }

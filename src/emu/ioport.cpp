@@ -347,6 +347,62 @@ void ioport_list::append(device_t &device, std::ostream &errorbuf)
 }
 
 
+//**************************************************************************
+//  CUSTOM BUTTON / AUTOFIRE PORTS (MAMEPlus port)
+//**************************************************************************
+
+#define CUSTOM_PORT_PLAYER(n) \
+	INPUT_PORTS_START(custom##n##p) \
+		PORT_START("CUSTOM" #n "P") \
+		PORT_BIT( 1 << (n - 1), IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(n) PORT_TOGGLE \
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(n) \
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(n) \
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(n) \
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(n) \
+	INPUT_PORTS_END
+
+CUSTOM_PORT_PLAYER(1)
+CUSTOM_PORT_PLAYER(2)
+CUSTOM_PORT_PLAYER(3)
+CUSTOM_PORT_PLAYER(4)
+CUSTOM_PORT_PLAYER(5)
+CUSTOM_PORT_PLAYER(6)
+CUSTOM_PORT_PLAYER(7)
+CUSTOM_PORT_PLAYER(8)
+
+#undef CUSTOM_PORT_PLAYER
+
+
+//-------------------------------------------------
+//  append_custom - append the given device's input
+//  ports plus per-player custom button / autofire
+//  ports (MAMEPlus port)
+//-------------------------------------------------
+
+void ioport_list::append_custom(device_t &device, std::ostream &errorbuf)
+{
+	// append the regular ports first
+	append(device, errorbuf);
+
+	// determine the highest player number in use
+	int nplayer = 0;
+	for (auto &port : *this)
+		for (ioport_field &field : port.second->fields())
+			if (nplayer < field.player() + 1)
+				nplayer = field.player() + 1;
+
+	// append custom ports if needed
+	if (nplayer > 0) INPUT_PORTS_NAME(custom1p)(device, *this, errorbuf);
+	if (nplayer > 1) INPUT_PORTS_NAME(custom2p)(device, *this, errorbuf);
+	if (nplayer > 2) INPUT_PORTS_NAME(custom3p)(device, *this, errorbuf);
+	if (nplayer > 3) INPUT_PORTS_NAME(custom4p)(device, *this, errorbuf);
+	if (nplayer > 4) INPUT_PORTS_NAME(custom5p)(device, *this, errorbuf);
+	if (nplayer > 5) INPUT_PORTS_NAME(custom6p)(device, *this, errorbuf);
+	if (nplayer > 6) INPUT_PORTS_NAME(custom7p)(device, *this, errorbuf);
+	if (nplayer > 7) INPUT_PORTS_NAME(custom8p)(device, *this, errorbuf);
+}
+
+
 
 //**************************************************************************
 //  INPUT TYPE ENTRY
@@ -1182,7 +1238,8 @@ void ioport_field::frame_update(ioport_value &result)
 	}
 
 	// if the state changed, look for switch down/switch up
-	bool curstate = m_digital_value || machine().input().seq_pressed(seq());
+	// MAMEPlus port: consult the autofire/custom button engine
+	bool curstate = m_digital_value || machine().ioport().auto_pressed(this);
 	bool changed = false;
 	if (curstate != m_live->last)
 	{
@@ -1212,7 +1269,10 @@ void ioport_field::frame_update(ioport_value &result)
 		if (m_live->toggle)
 		{
 			if (m_settinglist.empty())
+			{
 				m_live->value ^= m_mask;
+				m_live->autofire_toggle = !m_live->autofire_toggle; // MAMEPlus port
+			}
 			else
 				select_next_setting();
 		}
@@ -1413,7 +1473,10 @@ ioport_field_live::ioport_field_live(ioport_field &field, analog_field *analog) 
 	last(0),
 	toggle(field.toggle()),
 	joydir(digital_joystick::JOYDIR_COUNT),
-	lockout(false)
+	lockout(false),
+	autofire(0),
+	autofire_toggle(false),
+	autopressed(0)
 {
 	// fill in the basic values
 	for (input_seq_type seqtype = SEQ_TYPE_STANDARD; seqtype < SEQ_TYPE_TOTAL; ++seqtype)
@@ -1728,11 +1791,24 @@ ioport_manager::ioport_manager(running_machine &machine) :
 	m_last_delta_nsec(0),
 	m_playback_accumulated_speed(0),
 	m_playback_accumulated_frames(0),
+	m_caption_file(machine.options().input_directory(), OPEN_FLAG_READ),
+	m_next_caption_frame(-1),
+	m_caption_timer(0),
+	m_next_caption_timer(0),
 	m_deselected_card_config(),
 	m_applied_device_defaults(false)
 {
 	for (auto &entries : m_type_to_entry)
 		std::fill(std::begin(entries), std::end(entries), nullptr);
+
+	// autofire/custom button defaults (MAMEPlus port)
+	std::fill(std::begin(m_custom_button), std::end(m_custom_button), 0);
+	std::fill(std::begin(m_custom_button_info), std::end(m_custom_button_info), nullptr);
+	for (int player = 0; MAX_PLAYERS > player; ++player)
+	{
+		m_autofiredelay[player] = 3; // 1 is too short for some games
+		m_autofiretoggle[player] = true;
+	}
 }
 
 
@@ -1756,7 +1832,12 @@ time_t ioport_manager::initialize()
 		std::ostringstream errors;
 		for (device_t &device : iter)
 		{
-			m_portlist.append(device, errors);
+			// MAMEPlus port: append per-player custom button / autofire ports,
+			// but only once (on the root device) to avoid duplicate port tags
+			if (&device == &machine().root_device())
+				m_portlist.append_custom(device, errors);
+			else
+				m_portlist.append(device, errors);
 			if (errors.tellp())
 			{
 				osd_printf_error("Input port errors:\n%s", std::move(errors).str());
@@ -1764,6 +1845,12 @@ time_t ioport_manager::initialize()
 			}
 		}
 	}
+
+	// register custom button fields (MAMEPlus port)
+	for (auto &port : m_portlist)
+		for (ioport_field &field : port.second->fields())
+			if (field.type() >= IPT_CUSTOM1 && (field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS) && field.player() < MAX_PLAYERS)
+				m_custom_button_info[field.player()][field.type() - IPT_CUSTOM1] = &field;
 
 	// renumber player numbers for controller ports
 	int player_offset = 0;
@@ -2095,6 +2182,77 @@ void ioport_manager::frame_update_callback()
 
 
 //-------------------------------------------------
+//  auto_pressed - return the current state of a
+//  digital field, applying the autofire engine
+//  and custom button combinations (MAMEPlus port)
+//-------------------------------------------------
+
+bool ioport_manager::auto_pressed(ioport_field *field)
+{
+#define IS_AUTOKEY(f)   (((f)->live().autofire & AUTOFIRE_ON) \
+						|| (((f)->live().autofire & AUTOFIRE_TOGGLE) && m_autofiretoggle[(f)->player()]))
+
+	bool pressed = machine().input().seq_pressed(field->seq(SEQ_TYPE_STANDARD));
+	int is_auto = IS_AUTOKEY(field);
+
+	// a toggle-type field latches the per-player autofire on/off state
+	if (pressed && field->toggle())
+		m_autofiretoggle[field->player()] = field->live().autofire_toggle;
+
+	// custom button combinations can force action buttons pressed,
+	// optionally using the autofire rhythm of the custom button itself
+	if (field->type() >= IPT_BUTTON1 && field->type() < IPT_BUTTON1 + MAX_NORMAL_BUTTONS)
+	{
+		u16 const button_mask = u16(1 << (field->type() - IPT_BUTTON1));
+
+		for (int custom = 0; MAX_CUSTOM_BUTTONS > custom; custom++)
+		{
+			if (m_custom_button[field->player()][custom] & button_mask)
+			{
+				ioport_field *custom_info = m_custom_button_info[field->player()][custom];
+
+				if (custom_info && machine().input().seq_pressed(custom_info->seq(SEQ_TYPE_STANDARD)))
+				{
+					if (IS_AUTOKEY(custom_info))
+					{
+						if (pressed)
+							is_auto &= 1;
+						else
+							is_auto = 1;
+
+						field = custom_info;
+					}
+					else
+						is_auto = 0;
+
+					pressed = true;
+				}
+			}
+		}
+	}
+
+	if (is_auto)
+	{
+		if (pressed)
+		{
+			if (field->live().autopressed > m_autofiredelay[field->player()])
+				field->live().autopressed = 0;
+			else if (field->live().autopressed > m_autofiredelay[field->player()] / 2)
+				pressed = false;
+
+			field->live().autopressed++;
+		}
+		else
+			field->live().autopressed = 0;
+	}
+
+	return pressed;
+
+#undef IS_AUTOKEY
+}
+
+
+//-------------------------------------------------
 //  frame_update_internal - core logic for
 //  per-frame input port updating
 //-------------------------------------------------
@@ -2115,6 +2273,22 @@ void ioport_manager::frame_update()
 	// update the digital joysticks
 	for (digital_joystick &joystick : m_joystick_list)
 		joystick.frame_update();
+
+	// update the autofire cycle counters of the custom button fields (MAMEPlus port)
+	for (auto &port : m_portlist)
+		for (ioport_field &field : port.second->fields())
+			if (field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
+			{
+				if (machine().input().seq_pressed(field.seq(SEQ_TYPE_STANDARD)))
+				{
+					if (field.live().autopressed > m_autofiredelay[field.player()])
+						field.live().autopressed = 0;
+
+					field.live().autopressed++;
+				}
+				else
+					field.live().autopressed = 0;
+			}
 
 	// compute default values for all the ports
 	// two passes to catch conditionals properly
@@ -2326,6 +2500,14 @@ void ioport_manager::load_config(config_type cfg_type, config_level cfg_level, u
 				}
 			}
 		}
+
+		// load per-player autofire delays (MAMEPlus port)
+		for (util::xml::data_node const *afnode = parentnode->get_child("autofire"); afnode; afnode = afnode->get_next_sibling("autofire"))
+		{
+			int const player = afnode->get_attribute_int("player", 0);
+			if ((player >= 1) && (player <= MAX_PLAYERS))
+				m_autofiredelay[player - 1] = afnode->get_attribute_int("delay", 3);
+		}
 	}
 }
 
@@ -2515,7 +2697,9 @@ void ioport_manager::load_system_config(
 	char const *const tag = portnode.get_attribute_string("tag", nullptr);
 	ioport_value const mask = portnode.get_attribute_int("mask", 0);
 	ioport_value const defvalue = portnode.get_attribute_int("defvalue", 0);
-	if (!tag || !mask)
+	// MAMEPlus port: the custom button fields use a zero mask
+	bool const is_custom_type((ioport_type(type) >= IPT_CUSTOM1) && (ioport_type(type) < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS));
+	if (!tag || (!mask && !is_custom_type))
 		return;
 
 	// find the port we want
@@ -2550,6 +2734,22 @@ void ioport_manager::load_system_config(
 						field.live().toggle = true;
 					else if (togstring && !strcmp(togstring, "no"))
 						field.live().toggle = false;
+
+					// fetch autofire setting for action buttons (MAMEPlus port)
+					if (field.type() >= IPT_BUTTON1 && field.type() < IPT_BUTTON1 + MAX_NORMAL_BUTTONS)
+					{
+						char const *const autostring = portnode.get_attribute_string("autofire", "off");
+						if (!strcmp(autostring, "on"))
+							field.live().autofire = AUTOFIRE_ON;
+						else if (!strcmp(autostring, "toggle"))
+							field.live().autofire = AUTOFIRE_TOGGLE;
+						else
+							field.live().autofire = 0;
+					}
+
+					// fetch custom button combination (MAMEPlus port)
+					if (field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
+						m_custom_button[field.player()][field.type() - IPT_CUSTOM1] = u16(portnode.get_attribute_int("custom", 0));
 				}
 				else
 				{
@@ -2791,6 +2991,18 @@ void ioport_manager::save_game_inputs(util::xml::data_node &parentnode)
 		kbdnode->set_attribute_int("enabled", natkbd.keyboard_enabled(i));
 	}
 
+	// save per-player autofire delays (MAMEPlus port)
+	for (int player = 0; MAX_PLAYERS > player; ++player)
+		if (m_autofiredelay[player] != 3)
+		{
+			util::xml::data_node *const afnode = parentnode.add_child("autofire", nullptr);
+			if (afnode)
+			{
+				afnode->set_attribute_int("player", player + 1);
+				afnode->set_attribute_int("delay", m_autofiredelay[player]);
+			}
+		}
+
 	// iterate over ports
 	for (auto &port : m_portlist)
 		for (ioport_field const &field : port.second->fields())
@@ -2806,6 +3018,10 @@ void ioport_manager::save_game_inputs(util::xml::data_node &parentnode)
 					// non-analog changes
 					changed = changed || ((field.live().value & field.mask()) != (field.defvalue() & field.mask()));
 					changed = changed || (field.live().toggle != field.toggle());
+					// MAMEPlus port: autofire / custom button state counts as a change
+					changed = changed || (field.live().autofire != 0);
+					changed = changed || ((field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS) &&
+											m_custom_button[field.player()][field.type() - IPT_CUSTOM1] != 0);
 				}
 				else
 				{
@@ -2847,6 +3063,14 @@ void ioport_manager::save_game_inputs(util::xml::data_node &parentnode)
 								portnode->set_attribute_int("value", field.live().value & field.mask());
 							if (field.live().toggle != field.toggle())
 								portnode->set_attribute("toggle", field.live().toggle ? "yes" : "no");
+							// MAMEPlus port: write autofire / custom button state
+							if (field.live().autofire & AUTOFIRE_ON)
+								portnode->set_attribute("autofire", "on");
+							else if (field.live().autofire & AUTOFIRE_TOGGLE)
+								portnode->set_attribute("autofire", "toggle");
+							if ((field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS) &&
+								m_custom_button[field.player()][field.type() - IPT_CUSTOM1] != 0)
+								portnode->set_attribute_int("custom", m_custom_button[field.player()][field.type() - IPT_CUSTOM1]);
 						}
 						else
 						{
@@ -2967,6 +3191,14 @@ time_t ioport_manager::playback_init()
 	if (sysname != machine().system().name)
 		osd_printf_info("Input file is for machine '%s', not for current machine '%s'\n", sysname, machine().system().name);
 
+	// open the caption file if one exists next to the input file (MAMEPlus port)
+	std::string capname(filename);
+	if (capname.length() > 4)
+	{
+		capname.replace(capname.length() - 4, 4, ".cap");
+		m_caption_file.open(capname);
+	}
+
 	// enable compression
 	m_playback_stream = util::zlib_read(*m_playback_file, 16386);
 	return basetime;
@@ -2986,6 +3218,13 @@ void ioport_manager::playback_end(const char *message)
 		m_playback_stream.reset();
 		m_playback_file.reset();
 
+		// close the caption file and reset caption state (MAMEPlus port)
+		if (m_caption_file.is_open())
+			m_caption_file.close();
+		m_next_caption_frame = -1;
+		m_caption_timer = 0;
+		m_next_caption_timer = 0;
+
 		// pop a message
 		if (message != nullptr)
 			machine().popmessage("Playback Ended\nReason: %s", message);
@@ -3002,7 +3241,122 @@ void ioport_manager::playback_end(const char *message)
 			osd_printf_info("Exiting MAME now...\n");
 			machine().schedule_exit();
 		}
+		// pause the program at the end of inp file playback (MAMEPlus port)
+		else if (machine().options().playback_end_pause())
+		{
+			osd_printf_info("Pausing MAME now...\n");
+			machine().pause(true);
+		}
 	}
+}
+
+
+//-------------------------------------------------
+//  caption_frame_update - parse the caption file
+//  during input playback and refresh the active
+//  caption (MAMEPlus port)
+//-------------------------------------------------
+
+void ioport_manager::caption_frame_update()
+{
+	if (has_caption_file() && (m_next_caption_frame < 0))
+	{
+		char read_buf[512];
+
+		while (true)
+		{
+			if (m_caption_file.gets(read_buf, sizeof(read_buf) - 1) == nullptr)
+			{
+				m_caption_file.close();
+				return;
+			}
+
+			// skip comment and empty lines
+			char *p = read_buf;
+			while (*p == '\t' || *p == ' ')
+				p++;
+			if (*p == '#' || *p == '\r' || *p == '\n' || *p == '\0')
+				continue;
+
+			// leading frame number
+			char buf[18] = "";
+			int i = 0, j = 0;
+			while (i < 16)
+			{
+				char const c = p[i];
+				if (c == '\t' || c == ' ')
+				{
+					i++;
+					continue;
+				}
+				if (c < '0' || c > '9')
+					break;
+				buf[j++] = c;
+				i++;
+			}
+			buf[j] = '\0';
+
+			m_next_caption_frame = s32(strtol(buf, nullptr, 10));
+			m_next_caption_timer = 0;
+			if (m_next_caption_frame == 0)
+			{
+				// zero means "invalid": hold the error message and give up
+				m_next_caption_frame = s32(machine().first_screen()->frame_number());
+				m_next_caption = _("Error: illegal caption file");
+				m_caption_file.close();
+				break;
+			}
+
+			// optional explicit display duration in frames: "(NNNN) :"
+			for (;; i++)
+			{
+				if (p[i] == '(')
+				{
+					for (i++, j = 0;; i++)
+					{
+						char const c = p[i];
+						if (c == '\t' || c == ' ')
+							continue;
+						if (c < '0' || c > '9' || j >= 15)
+							break;
+						buf[j++] = c;
+					}
+					buf[j] = '\0';
+
+					m_next_caption_timer = u32(strtol(buf, nullptr, 10));
+
+					for (;; i++)
+					{
+						if (p[i] == '\t' || p[i] == ' ')
+							continue;
+						if (p[i] == ':')
+							break;
+					}
+				}
+				if (p[i] != '\t' && p[i] != ' ' && p[i] != ':')
+					break;
+			}
+			if (m_next_caption_timer == 0)
+				m_next_caption_timer = u32(5 * ATTOSECONDS_PER_SECOND / machine().first_screen()->refresh_attoseconds()); // 5 sec
+
+			// the rest of the line is the caption text
+			m_next_caption = &p[i];
+			while (!m_next_caption.empty() && (m_next_caption.back() == '\r' || m_next_caption.back() == '\n'))
+				m_next_caption.pop_back();
+			break;
+		}
+	}
+
+	if (m_next_caption_timer && (m_next_caption_frame <= s32(machine().first_screen()->frame_number())))
+	{
+		m_caption_timer = m_next_caption_timer;
+		m_caption_text = m_next_caption;
+		m_next_caption_frame = -1;
+		m_next_caption_timer = 0;
+	}
+
+	if (m_caption_timer)
+		m_caption_timer--;
 }
 
 

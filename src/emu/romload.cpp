@@ -14,6 +14,7 @@
 #include "drivenum.h"
 #include "emuopts.h"
 #include "fileio.h"
+#include "ips.h"
 #include "main.h"
 #include "softlist_dev.h"
 
@@ -791,13 +792,24 @@ std::unique_ptr<emu_file> rom_load_manager::open_rom_file(
 
 int rom_load_manager::rom_fread(emu_file *file, u8 *buffer, int length, const rom_entry *parent_region)
 {
+	int result;
+
 	if (file) // files just pass through
-		return file->read(buffer, length);
+	{
+		result = file->read(buffer, length);
 
-	if (!ROMREGION_ISERASE(parent_region)) // otherwise, fill with randomness unless it was already specifically erased
-		fill_random(buffer, length);
+		// apply IPS patch data if present (MAMEPlus port)
+		if (m_ips)
+			apply_ips_patch(m_ips, buffer, u32(result));
+	}
+	else
+	{
+		result = length;
+		if (!ROMREGION_ISERASE(parent_region)) // otherwise, fill with randomness unless it was already specifically erased
+			fill_random(buffer, length);
+	}
 
-	return length;
+	return result;
 }
 
 
@@ -1048,6 +1060,8 @@ void rom_load_manager::process_rom_entries(
 				file = open_rom_file(searchpath, romp, tried_file_names, from_list);
 				if (!file)
 					handle_missing_file(romp, tried_file_names, std::error_condition());
+				else
+					m_ips = assign_ips_patch(romp); // MAMEPlus port: bind IPS patch by ROM name
 			}
 
 			// loop until we run out of reloads
@@ -1568,6 +1582,7 @@ rom_load_manager::rom_load_manager(running_machine &machine)
 	, m_romsloadedsize(0)
 	, m_romstotalsize(0)
 	, m_chd_list()
+	, m_ips(nullptr)
 	, m_errorstring()
 	, m_softwarningstring()
 {
@@ -1610,8 +1625,21 @@ rom_load_manager::rom_load_manager(running_machine &machine)
 	// reset the disk list
 	m_chd_list.clear();
 
+	// preload IPS patches if requested (MAMEPlus port)
+	char const *const patchname(machine().options().ips());
+	if (patchname && *patchname)
+	{
+		if (!open_ips_entry(machine(), *this))
+			display_rom_load_results(false);
+	}
+
 	// process the ROM entries we were passed
 	process_region_list();
+
+	// release IPS patches (MAMEPlus port)
+	if (patchname && *patchname)
+		close_ips_entry(*this);
+	m_ips = nullptr;
 
 	// display the results and exit
 	display_rom_load_results(false);

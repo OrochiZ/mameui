@@ -414,6 +414,9 @@ public:
 	void register_vblank_callback(vblank_state_delegate vblank_callback);
 	void register_screen_bitmap(bitmap_t &bitmap);
 
+	// scale effect runtime switch (MAMEPlus port)
+	void reinit_scale_effect() { video_init_scale_effect(); }
+
 	// internal to the video system
 	bool update_quads();
 	void update_burnin();
@@ -449,6 +452,15 @@ private:
 	void destroy_scan_bitmaps();
 	void allocate_scan_bitmaps();
 
+	// scale effect support (MAMEPlus port)
+	void video_init_scale_effect();
+	void video_exit_scale_effect();
+	void free_scale_bitmap();
+	void realloc_scale_bitmaps();
+	void convert_palette_to_32(bitmap_ind16 const &src, bitmap_rgb32 &dst, const rectangle &visarea);
+	void convert_palette_to_15(bitmap_ind16 const &src, bitmap_ind16 &dst, const rectangle &visarea);
+	void texture_set_scale_bitmap(const rectangle &visarea);
+
 	// inline configuration data
 	screen_type_enum    m_type;                     // type of screen
 	int                 m_orientation;              // orientation flags combined with system flags
@@ -483,6 +495,13 @@ private:
 	std::vector<bitmap_t *> m_scan_bitmaps[2];      // 2x bitmaps for each individual scanline
 	bitmap_ind8         m_priority;                 // priority bitmap
 	bitmap_ind64        m_burnin;                   // burn-in bitmap
+
+	// scale effect (MAMEPlus port)
+	std::unique_ptr<bitmap_rgb32> m_scale_bitmap[2];        // scaled output bitmaps
+	std::unique_ptr<bitmap_rgb32> m_scale_work32[2];        // 32-bit converted source work bitmaps
+	std::unique_ptr<bitmap_ind16> m_scale_work16[2];        // 15-bit converted source work bitmaps
+	std::unique_ptr<bitmap_ind16> m_scale_work16o[2];       // 15-bit scaled output work bitmaps
+	bool                m_scale_dirty[2];           // scale output dirty flags
 	u8                  m_curbitmap;                // current bitmap index
 	u8                  m_curtexture;               // current texture index
 	bool                m_changed;                  // has this bitmap changed?

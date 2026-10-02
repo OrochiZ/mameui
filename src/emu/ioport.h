@@ -46,6 +46,16 @@ constexpr ioport_value IP_ACTIVE_LOW = 0xffffffff;
 // maximum number of players supported
 constexpr int MAX_PLAYERS = 10;
 
+// autofire flags for ioport_field_live::autofire (MAMEPlus port)
+constexpr int AUTOFIRE_ON     = 1; // autofire enabled
+constexpr int AUTOFIRE_TOGGLE = 2; // autofire enabled while the toggle key is latched
+
+// number of custom action buttons per player (MAMEPlus port)
+constexpr int MAX_CUSTOM_BUTTONS = 4;
+
+// number of standard action buttons that custom button combinations can target (MAMEPlus port)
+constexpr int MAX_NORMAL_BUTTONS = 16;
+
 // unicode constants
 constexpr char32_t UCHAR_INVALID = 0xffff;
 constexpr char32_t UCHAR_PRIVATE = 0x100000;
@@ -842,6 +852,11 @@ struct ioport_field_live
 	bool                    lockout;            // user lockout
 	std::string             name;               // overridden name
 	std::string             cfg[SEQ_TYPE_TOTAL];// configuration strings
+
+	// autofire state (MAMEPlus port)
+	int                     autofire;           // AUTOFIRE_ON / AUTOFIRE_TOGGLE / 0
+	bool                    autofire_toggle;    // current toggle state (for AUTOFIRE_TOGGLE fields)
+	int                     autopressed;        // autofire press cycle counter
 };
 
 
@@ -856,6 +871,7 @@ public:
 	ioport_list() { }
 
 	void append(device_t &device, std::ostream &errorbuf);
+	void append_custom(device_t &device, std::ostream &errorbuf); // MAMEPlus port
 };
 
 
@@ -1052,6 +1068,7 @@ public:
 	running_machine &machine() const noexcept { return m_machine; }
 	const ioport_list &ports() const noexcept { return m_portlist; }
 	bool safe_to_read() const noexcept { return m_safe_to_read; }
+	bool playback_active() const noexcept { return bool(m_playback_stream); } // MAMEPlus port
 
 	// type helpers
 	const std::vector<input_type_entry> &types() const noexcept { return m_typelist; }
@@ -1069,6 +1086,19 @@ public:
 	s32 frame_interpolate(s32 oldval, s32 newval);
 	ioport_type token_to_input_type(const char *string, int &player) const;
 	std::string input_type_to_token(ioport_type type, int player);
+
+	// autofire/custom button support (MAMEPlus port)
+	bool auto_pressed(ioport_field *field);
+	int get_autofiredelay(int player) const noexcept { return m_autofiredelay[player]; }
+	void set_autofiredelay(int player, int delay) noexcept { m_autofiredelay[player] = delay; }
+	u16 get_custom_button(int player, int which) const noexcept { return m_custom_button[player][which]; }
+	void set_custom_button(int player, int which, u16 buttons) noexcept { m_custom_button[player][which] = buttons; }
+	ioport_field *custom_button_field(int player, int which) const noexcept { return m_custom_button_info[player][which]; }
+
+	// input playback caption support (MAMEPlus port)
+	bool has_caption_file() const noexcept { return m_caption_file.is_open(); }
+	void caption_frame_update();
+	const std::string *active_caption() const noexcept { return m_caption_timer ? &m_caption_text : nullptr; }
 
 private:
 	// internal helpers
@@ -1130,6 +1160,20 @@ private:
 	util::read_stream::ptr  m_playback_stream;      // playback stream (nullptr if not recording)
 	u64                     m_playback_accumulated_speed; // accumulated speed during playback
 	u32                     m_playback_accumulated_frames; // accumulated frames during playback
+
+	// caption file for input playback (MAMEPlus port)
+	emu_file                m_caption_file;         // caption file (not open if not playing back captions)
+	s32                     m_next_caption_frame;   // frame number the next caption becomes visible at
+	u32                     m_caption_timer;        // remaining frames the active caption stays visible
+	u32                     m_next_caption_timer;   // frames the pending caption will stay visible
+	std::string             m_caption_text;         // text of the active caption
+	std::string             m_next_caption;         // text of the pending caption
+
+	// autofire/custom button state (MAMEPlus port)
+	u16                     m_custom_button[MAX_PLAYERS][MAX_CUSTOM_BUTTONS];      // button combination mask per custom button
+	ioport_field *          m_custom_button_info[MAX_PLAYERS][MAX_CUSTOM_BUTTONS]; // custom button fields
+	int                     m_autofiredelay[MAX_PLAYERS];   // autofire delay (frames) per player
+	bool                    m_autofiretoggle[MAX_PLAYERS];  // latched autofire toggle per player
 
 	// storage for inactive configuration
 	std::unique_ptr<util::xml::file> m_deselected_card_config;

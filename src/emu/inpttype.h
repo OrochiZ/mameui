@@ -200,6 +200,15 @@ enum ioport_type : osd::u32
 
 	IPT_GAMBLING_LAST,
 
+	// autofire control buttons (MAMEPlus port)
+	IPT_TOGGLE_AUTOFIRE,
+
+	// custom action buttons (MAMEPlus port)
+	IPT_CUSTOM1,
+	IPT_CUSTOM2,
+	IPT_CUSTOM3,
+	IPT_CUSTOM4,
+
 	// analog inputs
 	IPT_ANALOG_FIRST,
 
