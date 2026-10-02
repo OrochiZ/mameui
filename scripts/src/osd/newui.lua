@@ -16,7 +16,7 @@ premake.make.linkoptions_after = false;
 function maintargetosdoptions(_target,_subtarget)
 	osdmodulestargetconf()
 
-	configuration { "mingw*-gcc" }
+	configuration { "mingw*" }
 		linkoptions {
 			"-municode",
 		}
