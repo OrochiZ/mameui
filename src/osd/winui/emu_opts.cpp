@@ -13,6 +13,7 @@
 // standard windows headers
 #include <windows.h>
 #include <windowsx.h>
+#include <shellapi.h>
 
 // standard C headers
 #include <tchar.h>
@@ -24,6 +25,7 @@
 #include "drivenum.h"
 #include "emu_opts.h"
 #include "path.h"
+#include "winui.h"
 #include "main.h"
 
 
@@ -184,16 +186,72 @@ string GetIniDir()
 		return GetEmuPath() + PATH_SEPARATOR + global_ini;
 }
 
+// Does <dir>\<configname>.ini exist?
+static bool dir_has_config_ini(const char *dir, const char *config_ini)
+{
+	string probe = string(dir) + PATH_SEPARATOR + config_ini;
+	DWORD attr = GetFileAttributesA(probe.c_str());
+	return (attr != INVALID_FILE_ATTRIBUTES) && !(attr & FILE_ATTRIBUTE_DIRECTORY);
+}
+
 string GetEmuPath()
 {
 	if (emu_path.empty())
 	{
-		char exe_path[MAX_PATH];
-		GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
-		emu_path = string(exe_path);
-		std::size_t pos = emu_path.find_last_of("\\");
-		emu_path.erase(pos);
-		printf("GetEmuPath = %s\n",emu_path.c_str());
+		const char *config_ini = emulator_info::get_configname();
+		string config_filename = string(config_ini) + ".ini";
+		char cand[MAX_PATH];
+
+		// Resolve the "data directory" holding mame.ini/ui.ini. MamePlus
+		// always used the current directory, and shell launches (double
+		// click / Win+R) set the CWD beside the exe link, so prefer:
+		//   1. CWD when it contains the config ini
+		//   2. the directory the exe was launched from (CMD keeps the
+		//      symlinked path in the command line; note this build is
+		//      -municode so CRT __argv is uninitialized and the command
+		//      line must go through GetCommandLineW)
+		//   3. the real exe directory (GetModuleFileName)
+		if (GetCurrentDirectoryA(MAX_PATH, cand) && dir_has_config_ini(cand, config_filename.c_str()))
+		{
+			emu_path = string(cand);
+			printf("GetEmuPath = %s (cwd)\n",emu_path.c_str());
+		}
+
+		if (emu_path.empty())
+		{
+			int argc_w = 0;
+			LPWSTR *argv_w = CommandLineToArgvW(GetCommandLineW(), &argc_w);
+			char *a0 = (argv_w && argc_w >= 1) ? ui_utf8_from_wstring(argv_w[0]) : nullptr;
+			char launch_path[MAX_PATH];
+			if (a0 && a0[0] && GetFullPathNameA(a0, MAX_PATH, launch_path, nullptr))
+			{
+				string launch_dir = string(launch_path);
+				std::size_t pos = launch_dir.find_last_of("\\/");
+				if (pos != string::npos && pos > 0)
+				{
+					launch_dir.erase(pos);
+					if (dir_has_config_ini(launch_dir.c_str(), config_filename.c_str()))
+					{
+						emu_path = launch_dir;
+						printf("GetEmuPath = %s (launch dir)\n",emu_path.c_str());
+					}
+				}
+			}
+			if (a0)
+				free(a0);
+			if (argv_w)
+				LocalFree(argv_w);
+		}
+
+		if (emu_path.empty())
+		{
+			char exe_path[MAX_PATH];
+			GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
+			emu_path = string(exe_path);
+			std::size_t pos = emu_path.find_last_of("\\");
+			emu_path.erase(pos);
+			printf("GetEmuPath = %s\n",emu_path.c_str());
+		}
 	}
 
 	return emu_path;
@@ -356,6 +414,21 @@ void save_options(windows_options &opts, OPTIONS_TYPE opt_type, int drvindex)
 	}
 //	else
 //		printf("Unable to save settings\n");
+}
+
+// MAMEPlus port: IPS patch directory (core -ipspath option)
+
+const std::string GetIPSDir()
+{
+	// first segment of the (possibly multi-)path
+	std::string const paths(MameUIGlobal().value(OPTION_IPSPATH));
+	size_t const sep = paths.find_first_of(";,");
+	return (sep != std::string::npos) ? paths.substr(0, sep) : paths;
+}
+
+void SetIPSDir(const char *path)
+{
+	MameUIGlobal().set_value(OPTION_IPSPATH, path, OPTION_PRIORITY_CMDLINE);
 }
 
 void emu_opts_init(bool b)

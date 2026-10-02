@@ -1,0 +1,348 @@
+// license:BSD-3-Clause
+/***************************************************************************
+
+    winui_translate.cpp
+
+    MAMEUI GUI self-translation (MAMEPlus port).
+
+    Instead of porting Plus' custom .mmo framework, this rides on the
+    official gettext approach, but with a dedicated dictionary file
+    language/<lang>/winui.mo so the official strings.mo files stay
+    untouched for upstream maintenance. The mo parser is a trimmed copy
+    of util/language.cpp holding its own map (the official one is a
+    process-wide singleton built around strings.mo).
+
+***************************************************************************/
+
+#include "winui_translate.h"
+
+// standard windows headers
+#include <tchar.h>
+
+// MAME/MAMEUI headers
+#include "emu.h"
+#include "emuopts.h"
+#include "emu_opts.h"
+#include "winutf8.h"
+#include "winui.h"
+#include "strconv.h"
+
+#include "util/corestr.h"
+#include "util/ioprocs.h"
+
+#include <cstdint>
+#include <cstring>
+#include <string>
+#include <unordered_map>
+#include <utility>
+
+
+//============================================================
+//  LOCAL VARIABLES
+//============================================================
+
+static bool s_loaded = false;
+static HHOOK s_cbt_hook = NULL;
+static std::unordered_map<std::string, std::string> s_winui_map;
+
+constexpr std::uint32_t MO_MAGIC = 0x950412de;
+constexpr std::uint32_t MO_MAGIC_REVERSED = 0xde120495;
+
+
+//============================================================
+//  load_winui_mo - parse a compiled gettext .mo file into the
+//  GUI dictionary (trimmed from util/language.cpp)
+//============================================================
+
+static void load_winui_mo(util::random_read &file)
+{
+	std::uint64_t size = 0;
+	if (file.length(size) || (20 > size))
+	{
+		osd_printf_verbose("Error reading GUI translation file: %u-byte file is too small\n", size);
+		return;
+	}
+
+	std::unique_ptr<std::uint32_t []> data_buf(new (std::nothrow) std::uint32_t [(size + 3) / 4]);
+	if (!data_buf)
+		return;
+
+	auto const [err, actual] = util::read(file, data_buf.get(), size);
+	if (err || (actual != size))
+	{
+		osd_printf_verbose("Error reading GUI translation file: requested %u bytes but got %u bytes\n", size, actual);
+		return;
+	}
+
+	if ((data_buf[0] != MO_MAGIC) && (data_buf[0] != MO_MAGIC_REVERSED))
+	{
+		osd_printf_verbose("Error reading GUI translation file: unrecognized magic number 0x%08X\n", data_buf[0]);
+		return;
+	}
+
+	auto const fetch_word =
+			[reversed = data_buf[0] == MO_MAGIC_REVERSED, words = data_buf.get()] (size_t offset)
+			{
+				return reversed ? swapendian_int32(words[offset]) : words[offset];
+			};
+
+	std::uint32_t const number_of_strings = fetch_word(2);
+	std::uint32_t const original_table_offset = fetch_word(3) >> 2;
+	std::uint32_t const translation_table_offset = fetch_word(4) >> 2;
+	if ((4 * (original_table_offset + (std::uint64_t(number_of_strings) * 2))) > size)
+		return;
+	if ((4 * (translation_table_offset + (std::uint64_t(number_of_strings) * 2))) > size)
+		return;
+
+	char const *const data = reinterpret_cast<char const *>(data_buf.get());
+	for (std::uint32_t i = 1; number_of_strings > i; ++i)
+	{
+		std::uint32_t const original_length = fetch_word(original_table_offset + (2 * i));
+		std::uint32_t const original_offset = fetch_word(original_table_offset + (2 * i) + 1);
+		std::uint32_t const translation_length = fetch_word(translation_table_offset + (2 * i));
+		std::uint32_t const translation_offset = fetch_word(translation_table_offset + (2 * i) + 1);
+		if (((original_length + original_offset) >= size) || ((translation_length + translation_offset) >= size))
+			continue;
+		if (data[original_length + original_offset] || data[translation_length + translation_offset])
+			continue;
+
+		// the official strings.mo keeps the table views alive; we copy
+		// instead so the buffer can go away immediately
+		s_winui_map.emplace(
+				std::string(&data[original_offset], original_length),
+				std::string(&data[translation_offset], translation_length));
+	}
+
+	osd_printf_verbose("Loaded %u GUI translated strings from file\n", s_winui_map.size());
+}
+
+
+//============================================================
+//  load_translation - resolve the language from the global
+//  options and load the .mo dictionary (GUI phase)
+//============================================================
+
+void winui_init_translation()
+{
+	if (s_loaded)
+		return;
+	s_loaded = true;
+
+	std::string name = MameUIGlobal().value(OPTION_LANGUAGE);
+	// the core's "auto" language resolution is not available here;
+	// default to Simplified Chinese (MAMEPlus port)
+	if (name.empty() || name == "auto")
+		name = "Chinese_Simplified";
+
+	strreplace(name, " ", "_");
+	strreplace(name, "(", "");
+	strreplace(name, ")", "");
+
+	emu_file file(MameUIGlobal().value(OPTION_LANGUAGEPATH), OPEN_FLAG_READ);
+	if (file.open(name + PATH_SEPARATOR "winui.mo"))
+	{
+		osd_printf_verbose("No GUI translation file %s\\winui.mo\n", name.c_str());
+		return;
+	}
+
+	osd_printf_verbose("Loading GUI translation file %s\n", file.fullpath());
+	load_winui_mo(file);
+}
+
+
+//============================================================
+//  winui_reload_translation - re-read the dictionary after a
+//  language change and retranslate the main menu
+//============================================================
+
+void winui_reload_translation()
+{
+	s_loaded = false;
+	s_winui_map.clear();
+	winui_init_translation();
+	winui_translate_menu(GetMenu(GetMainWindow()));
+}
+
+
+//============================================================
+//  translate_text - look up a single string, preserving any
+//  "\t<accelerator>" suffix
+//============================================================
+
+static const std::string *winui_lookup(const std::string &key)
+{
+	auto const found = s_winui_map.find(key);
+	return (s_winui_map.end() != found) ? &found->second : nullptr;
+}
+
+static std::wstring translate_text(const std::wstring &src)
+{
+	std::wstring head = src;
+	std::wstring tail;
+	size_t const tab = src.find(L'\t');
+	if (tab != std::wstring::npos)
+	{
+		head = src.substr(0, tab);
+		tail = src.substr(tab);
+	}
+
+	char *const key_utf8 = ui_utf8_from_wstring(head.c_str());
+	if (!key_utf8)
+		return src;
+
+	std::string const plain_key(key_utf8);
+
+	// msgctxt "winui" entries are stored under "winui\004<message>"
+	std::string key;
+	key.reserve(6 + plain_key.size());
+	key.append("winui");
+	key.append(1, '\004');
+	key.append(plain_key);
+
+	std::string const *const tr = winui_lookup(key);
+	std::string const tr_utf8(tr ? *tr : std::string());
+	free(key_utf8);
+
+	// untranslated or identical: keep the original
+	if (tr_utf8.empty() || tr_utf8 == plain_key)
+		return src;
+
+	TCHAR *const tr_wide = ui_wstring_from_utf8(tr_utf8.c_str());
+	if (!tr_wide)
+		return src;
+	std::wstring const result = std::wstring(tr_wide) + tail;
+	free(tr_wide);
+	return result;
+}
+
+
+//============================================================
+//  winui_translate_menu - recursively rewrite menu items
+//============================================================
+
+void winui_translate_menu(HMENU hMenu)
+{
+	if (!hMenu)
+		return;
+
+	for (int i = GetMenuItemCount(hMenu) - 1; i >= 0; i--)
+	{
+		HMENU const sub = GetSubMenu(hMenu, i);
+		if (sub)
+			winui_translate_menu(sub);
+
+		WCHAR buffer[512];
+		MENUITEMINFOW mii;
+		ZeroMemory(&mii, sizeof(mii));
+		mii.cbSize     = sizeof(mii);
+		mii.fMask      = MIIM_STRING | MIIM_FTYPE;
+		mii.dwTypeData = buffer;
+		mii.cch        = std::size(buffer) - 1;
+		buffer[0]      = L'\0';
+
+		if (!GetMenuItemInfoW(hMenu, i, TRUE, &mii))
+			continue;
+		if (mii.fType & MFT_SEPARATOR)
+			continue;
+		if (!buffer[0])
+			continue;
+
+		std::wstring const translated = translate_text(buffer);
+		if (translated == buffer)
+			continue;
+
+		mii.fMask      = MIIM_STRING;
+		mii.dwTypeData = const_cast<LPWSTR>(translated.c_str());
+		mii.cch        = (UINT)translated.size();
+		SetMenuItemInfoW(hMenu, i, TRUE, &mii);
+	}
+}
+
+
+//============================================================
+//  child window enumeration
+//============================================================
+
+static BOOL CALLBACK TranslateChildProc(HWND child, LPARAM)
+{
+	WCHAR buffer[512];
+	if (GetWindowTextW(child, buffer, std::size(buffer) - 1) && buffer[0])
+	{
+		std::wstring const translated = translate_text(buffer);
+		if (translated != buffer)
+			SetWindowTextW(child, translated.c_str());
+	}
+	return TRUE;
+}
+
+
+//============================================================
+//  winui_translate_window - caption plus all child controls
+//============================================================
+
+void winui_translate_window(HWND hwnd)
+{
+	if (!hwnd)
+		return;
+
+	WCHAR buffer[512];
+	if (GetWindowTextW(hwnd, buffer, std::size(buffer) - 1) && buffer[0])
+	{
+		std::wstring const translated = translate_text(buffer);
+		if (translated != buffer)
+			SetWindowTextW(hwnd, translated.c_str());
+	}
+
+	EnumChildWindows(hwnd, TranslateChildProc, 0);
+}
+
+
+//============================================================
+//  winui_translate_tstring - translate one runtime string,
+//  caching results (tree items, list columns, ...)
+//============================================================
+
+const TCHAR *winui_translate_tstring(const TCHAR *src)
+{
+	static std::unordered_map<std::wstring, std::wstring> s_cache;
+
+	if (!src || !src[0] || s_winui_map.empty())
+		return src;
+
+	std::wstring const key(src);
+	auto const cached = s_cache.find(key);
+	if (s_cache.end() != cached)
+		return cached->second.c_str();
+
+	std::wstring const translated = translate_text(key);
+	if (translated != key)
+		return s_cache.emplace(key, translated).first->second.c_str();
+
+	// remember untranslated too, to keep the cache complete
+	return s_cache.emplace(key, key).first->second.c_str();
+}
+
+
+//============================================================
+//  CBT hook - every dialog created on this thread gets
+//  translated when it becomes active (property sheets,
+//  directories, about, message boxes, ...)
+//============================================================
+
+static LRESULT CALLBACK CbtHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode == HCBT_ACTIVATE)
+	{
+		CBTACTIVATESTRUCT const *const info = reinterpret_cast<CBTACTIVATESTRUCT const *>(lParam);
+		if (info && info->hWndActive)
+			winui_translate_window(info->hWndActive);
+	}
+	return CallNextHookEx(s_cbt_hook, nCode, wParam, lParam);
+}
+
+void winui_install_translate_hook()
+{
+	if (s_cbt_hook)
+		return;
+	s_cbt_hook = SetWindowsHookExW(WH_CBT, CbtHookProc, NULL, GetCurrentThreadId());
+}

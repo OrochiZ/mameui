@@ -22,6 +22,7 @@
 #include "emu.h"
 #include "mui_util.h"
 #include "winui.h"
+#include "winui_translate.h"
 #include "treeview.h"
 #include "resource.h"
 #include "mui_opts.h"
@@ -1569,7 +1570,7 @@ void ResetTreeViewFolders()
 
 			tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 			tvs.hParent = TVI_ROOT;
-			tvi.pszText = lpFolder->m_lptTitle;
+			tvi.pszText = const_cast<LPTSTR>(winui_translate_tstring(lpFolder->m_lptTitle));
 			tvi.lParam = (LPARAM)lpFolder;
 			tvi.iImage = GetTreeViewIconIndex(lpFolder->m_nIconId);
 			tvi.iSelectedImage = 0;
@@ -1613,7 +1614,7 @@ void ResetTreeViewFolders()
 		tvs.hParent = hti_parent;
 		tvi.iImage = GetTreeViewIconIndex(m_treeFolders[i]->m_nIconId);
 		tvi.iSelectedImage = 0;
-		tvi.pszText = m_treeFolders[i]->m_lptTitle;
+		tvi.pszText = const_cast<LPTSTR>(winui_translate_tstring(m_treeFolders[i]->m_lptTitle));
 		tvi.lParam = (LPARAM)m_treeFolders[i];
 		tvs.item = tvi;
 

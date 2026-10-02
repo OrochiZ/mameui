@@ -13,6 +13,7 @@
 // MAME/MAMEUI headers
 #include "picker.h"
 #include "winui.h"
+#include "winui_translate.h"
 #include "mui_opts.h"
 #include "treeview.h"
 
@@ -313,7 +314,7 @@ static void Picker_InternalResetColumnDisplay(HWND hWnd, BOOL bFirstTime)
 		if (shown[order[i]])
 		{
 			lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM | LVCF_TEXT;
-			lvc.pszText = (LPTSTR) pPickerInfo->ppszColumnNames[order[i]];
+			lvc.pszText = const_cast<LPTSTR>(winui_translate_tstring(pPickerInfo->ppszColumnNames[order[i]]));
 			lvc.iSubItem = nColumn;
 			lvc.cx = widths[order[i]];
 			lvc.fmt = LVCFMT_LEFT;

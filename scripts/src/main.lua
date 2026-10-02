@@ -276,8 +276,8 @@ if (STANDALONE~=true) then
 	end
 	files {
 		mainfile,
---		MAME_DIR .. "src/version.cpp",
-		GEN_DIR .. "version.cpp",
+		MAME_DIR .. "src/version.cpp",
+--		GEN_DIR .. "version.cpp",
 		GEN_DIR  .. _target .. "/" .. _subtarget .."/drivlist.cpp",
 	}
 

@@ -664,5 +664,7 @@
 #define ID_VIEW_BYSRCDRIVERS            40178
 #define ID_VIEW_BYPLAYTIME              40179
 #define ID_VIEW_BYROMS                  40180
+// MAMEPlus port: per-game IPS patch context menu (ID_PLAY_IPS .. ID_PLAY_IPS+127)
+#define ID_PLAY_IPS                     40300
 #define IDC_STATIC                      -1
 

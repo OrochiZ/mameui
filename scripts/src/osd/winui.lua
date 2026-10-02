@@ -232,6 +232,8 @@ project ("osd_" .. _OPTIONS["osd"])
 		MAME_DIR .. "src/osd/winui/tabview.cpp",
 		MAME_DIR .. "src/osd/winui/treeview.cpp",
 		MAME_DIR .. "src/osd/winui/winui.cpp",
+		MAME_DIR .. "src/osd/winui/winui_translate.cpp",
+		MAME_DIR .. "src/osd/winui/winui_translate.h",
 	}
 
 project ("ocore_" .. _OPTIONS["osd"])

@@ -25,6 +25,8 @@
 
 // standard C headers
 #include <tchar.h>
+#include <string>
+#include <vector>
 
 // MAMEUI headers
 #include "bitmask.h"
@@ -34,8 +36,10 @@
 #include "emu_opts.h"
 #include "help.h"
 #include "properties.h"  // For GetHelpIDs
+#include "winui_translate.h"
 
 // MAME headers
+#include "emuopts.h"
 #include "winutf8.h"
 #include "corestr.h"
 
@@ -205,6 +209,10 @@ INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 	int nPatternCount = 0;
 	int value = 0;
 
+	// language names backing the IDC_LANGUAGE combo box; item data is an
+	// index into this (index 0 = "default", empty OPTION_LANGUAGE)
+	static std::vector<std::string> s_lang_list;
+
 	switch (Msg)
 	{
 	case WM_INITDIALOG:
@@ -273,6 +281,76 @@ INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 		SendDlgItemMessage(hDlg,IDC_SCREENSHOT_BORDERSIZE, TBM_SETPOS, true, value);
 		_itot(value,tmp,10);
 		SendDlgItemMessage(hDlg,IDC_SCREENSHOT_BORDERSIZETXT,WM_SETTEXT,0, (WPARAM)tmp);
+
+		// language selection: enumerate language/<name>/ strings.mo or
+		// winui.mo dictionaries; index 0 is the default (empty option)
+		{
+			HWND const combo = GetDlgItem(hDlg, IDC_LANGUAGE);
+			std::string const base = GetEmuPath() + PATH_SEPARATOR + "language";
+			std::string pattern = base + PATH_SEPARATOR + "*";
+			s_lang_list.clear();
+			s_lang_list.push_back("");
+			TCHAR *const default_text = ui_wstring_from_utf8("Default (Simplified Chinese)");
+			if (default_text)
+			{
+				(void)ComboBox_AddString(combo, default_text);
+				free(default_text);
+			}
+			(void)ComboBox_SetItemData(combo, 0, (LPARAM)0);
+
+			WIN32_FIND_DATAA find;
+			HANDLE const handle = FindFirstFileA(pattern.c_str(), &find);
+			if (handle != INVALID_HANDLE_VALUE)
+			{
+				do
+				{
+					if (!(find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+						continue;
+					if (!strcmp(find.cFileName, ".") || !strcmp(find.cFileName, ".."))
+						continue;
+
+					std::string const mo = base + PATH_SEPARATOR + find.cFileName + PATH_SEPARATOR + "strings.mo";
+					std::string const wmo = base + PATH_SEPARATOR + find.cFileName + PATH_SEPARATOR + "winui.mo";
+					DWORD const a1 = GetFileAttributesA(mo.c_str());
+					DWORD const a2 = GetFileAttributesA(wmo.c_str());
+					bool const has_mo = ((a1 != INVALID_FILE_ATTRIBUTES) && !(a1 & FILE_ATTRIBUTE_DIRECTORY))
+						|| ((a2 != INVALID_FILE_ATTRIBUTES) && !(a2 & FILE_ATTRIBUTE_DIRECTORY));
+					if (!has_mo)
+						continue;
+
+					s_lang_list.push_back(find.cFileName);
+					TCHAR *const name_wide = ui_wstring_from_utf8(find.cFileName);
+					if (name_wide)
+					{
+						(void)ComboBox_AddString(combo, name_wide);
+						free(name_wide);
+					}
+					(void)ComboBox_SetItemData(combo, (WPARAM)s_lang_list.size() - 1, (LPARAM)(s_lang_list.size() - 1));
+				}
+				while (FindNextFileA(handle, &find));
+				FindClose(handle);
+			}
+
+			// select the current setting
+			std::string const current = MameUIGlobal().value(OPTION_LANGUAGE);
+			int sel = 0;
+			if (!current.empty() && current != "auto")
+			{
+				std::string normalized = current;
+				strreplace(normalized, " ", "_");
+				strreplace(normalized, "(", "");
+				strreplace(normalized, ")", "");
+				for (size_t i = 1; s_lang_list.size() > i; i++)
+				{
+					if (s_lang_list[i] == normalized)
+					{
+						sel = (int)i;
+						break;
+					}
+				}
+			}
+			(void)ComboBox_SetCurSel(combo, sel);
+		}
 
 		//return true;
 		break;
@@ -369,6 +447,19 @@ INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 				SetOffsetClones(checked);
 				// LineUpIcons does just a ResetListView(), which is what we want here
 				PostMessage(GetMainWindow(),WM_COMMAND, MAKEWPARAM(ID_VIEW_LINEUPICONS, false),(LPARAM)NULL);
+			}
+
+			nCurSelection = ComboBox_GetCurSel(GetDlgItem(hDlg,IDC_LANGUAGE));
+			if (nCurSelection != CB_ERR)
+			{
+				std::string const lang = s_lang_list[(size_t)nCurSelection];
+				std::string const current = MameUIGlobal().value(OPTION_LANGUAGE);
+				if (lang != current)
+				{
+					emu_set_value(MameUIGlobal(), OPTION_LANGUAGE, lang);
+					save_options(MameUIGlobal(), OPTIONS_GLOBAL, GLOBAL_OPTIONS);
+					winui_reload_translation();
+				}
 			}
 
 			nCurSelection = ComboBox_GetCurSel(GetDlgItem(hDlg,IDC_SNAPNAME));

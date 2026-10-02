@@ -19,6 +19,7 @@
 #define DIRLIST_NEWENTRYTEXT "<               >"
 
 #include "mui_opts.h"
+#include "emu_opts.h"
 
 typedef struct
 {
@@ -59,6 +60,7 @@ const DIRECTORYINFO g_directoryInfo[] =
 	{ "Icons",                 nullptr,            nullptr,            40, true, 0 },
 //	{ "Ini Files",             GetIniDir,          nullptr,            7,  false, DIRDLG_INI },  // 2017-02-03 hardcoded to 'ini' now
 	{ "Input files",           nullptr,            nullptr,            16, true, 0 }, //DIRDLG_INP },  //not used anywhere
+	{ "IPS Files",             GetIPSDir,          SetIPSDir,          0,  true, 0 },  // MAMEPlus port
 	{ "Language",              nullptr,            nullptr,            12, false, 0 },
 	{ "Logos",                 nullptr,            nullptr,            34, true, 0 },
 	{ "Manuals (PDF)",         GetManualsDir,      SetManualsDir,      0,  false, 0 },

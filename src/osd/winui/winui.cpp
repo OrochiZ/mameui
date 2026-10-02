@@ -54,6 +54,7 @@
 #include "bitmask.h"
 #include "treeview.h"
 #include "splitters.h"
+#include "winui_translate.h"
 #ifdef DIRWATCH
 #include "dirwatch.h"
 #endif
@@ -66,6 +67,7 @@
 #include "messui.h"
 #include "drivenum.h"
 #include "mameopts.h"
+#include "emuopts.h"
 #include "modules/diagnostics/diagnostics_module.h"
 #include <fstream>
 
@@ -187,6 +189,10 @@ static BOOL             HandleTreeContextMenu( HWND hWnd, WPARAM wParam, LPARAM 
 static BOOL             HandleScreenShotContextMenu( HWND hWnd, WPARAM wParam, LPARAM lParam);
 static void             GamePicker_OnHeaderContextMenu(POINT pt, int nColumn);
 static void             GamePicker_OnBodyContextMenu(POINT pt);
+static void             InitIPSContextMenu(HMENU hMenu); // MAMEPlus port
+
+// MAMEPlus port: max IPS patches shown in the context menu
+#define MAX_PATCHES 128
 
 static void             InitListView();
 /* Re/initialize the ListView header columns */
@@ -242,8 +248,10 @@ static void load_translation(emu_options &m_options)
 	util::unload_translation();
 
 	std::string name = m_options.language();
-	if (name.empty())
-		return;
+	// MAMEPlus port: the core's "auto" language resolution is not handled here,
+	// which used to lock the internal UI to English -- default to Simplified Chinese
+	if (name.empty() || name == "auto")
+		name = "Chinese_Simplified";
 
 	strreplace(name, " ", "_");
 	strreplace(name, "(", "");
@@ -1568,6 +1576,9 @@ static BOOL Win32UI_init(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 	OptionsInit();
 	SendMessage(hProgress, PBM_SETPOS, 25, 0);
 	emu_opts_init(0);
+	// MAMEPlus port: load the GUI translation dictionary and translate dialogs
+	winui_init_translation();
+	winui_install_translate_hook();
 	printf("Win32UI_init: Options loaded\n");fflush(stdout);
 	SendMessage(hProgress, PBM_SETPOS, 40, 0);
 	//win_message_box_utf8(hMain, "test", emulator_info::get_appname(), MB_OK);
@@ -1615,6 +1626,9 @@ static BOOL Win32UI_init(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 		printf("Win32UI_init: Error creating main dialog, aborting\n");fflush(stdout);
 		return false;
 	}
+
+	// MAMEPlus port: translate the attached main menu
+	winui_translate_menu(GetMenu(hMain));
 
 #ifdef DIRWATCH
 	s_pWatcher = DirWatcher_Init(hMain, WM_MAME32_FILECHANGED);
@@ -3181,6 +3195,7 @@ static void GamePicker_OnHeaderContextMenu(POINT pt, int nColumn)
 	HMENU hMenuLoad = LoadMenu(hInst, MAKEINTRESOURCE(IDR_CONTEXT_HEADER));
 	HMENU hMenu = GetSubMenu(hMenuLoad, 0);
 	lastColumnClick = nColumn;
+	winui_translate_menu(hMenu); // MAMEPlus port
 	TrackPopupMenu(hMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,0,hMain,NULL);
 
 	DestroyMenu(hMenuLoad);
@@ -3808,6 +3823,57 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 	char* utf8_szFile;
 	BOOL res = 0;
 	int drvindex = Picker_GetSelectedItem(hwndList);
+
+	// MAMEPlus port: IPS patch context menu toggles the patch in the game's ips option
+	if ((id >= ID_PLAY_IPS) && (id < ID_PLAY_IPS + MAX_PATCHES))
+	{
+		if (drvindex >= 0)
+		{
+			char const *const game_name = driver_list::driver(drvindex).name;
+			std::wstring patch_filename;
+			if (GetPatchFilename(patch_filename, game_name, id - ID_PLAY_IPS))
+			{
+				char *const patch_utf8 = ui_utf8_from_wstring(patch_filename.c_str());
+				std::string const patch(patch_utf8 ? patch_utf8 : "");
+				if (patch_utf8)
+					free(patch_utf8);
+				windows_options o;
+				load_options(o, OPTIONS_GAME, drvindex, false);
+				std::string const cur(o.value(OPTION_IPS));
+
+				// rebuild the list without the patch, then re-append unless it was already there (toggle)
+				std::string new_opt;
+				bool found = false;
+				size_t pos = 0;
+				while (pos < cur.size())
+				{
+					size_t const comma = cur.find(',', pos);
+					std::string const token = cur.substr(pos, ((comma == std::string::npos) ? cur.size() : comma) - pos);
+					if (!token.empty() && (token != patch))
+					{
+						if (!new_opt.empty())
+							new_opt += ",";
+						new_opt += token;
+					}
+					if (token == patch)
+						found = true;
+					if (comma == std::string::npos)
+						break;
+					pos = comma + 1;
+				}
+				if (!found)
+				{
+					if (!new_opt.empty())
+						new_opt += ",";
+					new_opt += patch;
+				}
+
+				o.set_value(OPTION_IPS, new_opt, OPTION_PRIORITY_CMDLINE);
+				save_options(o, OPTIONS_GAME, drvindex);
+			}
+		}
+		return true;
+	}
 
 	switch (id)
 	{
@@ -5867,6 +5933,8 @@ static BOOL HandleTreeContextMenu(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 	UpdateMenu(hMenu);
 
+	winui_translate_menu(hMenu); // MAMEPlus port
+
 	TrackPopupMenu(hMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,0,hWnd,NULL);
 
 	DestroyMenu(hTreeMenu);
@@ -5883,9 +5951,117 @@ static void GamePicker_OnBodyContextMenu(POINT pt)
 
 	UpdateMenu(hMenu);
 
+	// MAMEPlus port: per-game IPS patch cascading menu
+	InitIPSContextMenu(hMenu);
+
+	winui_translate_menu(hMenu); // MAMEPlus port (after IPS items are injected)
+
 	TrackPopupMenu(hMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,0,hMain,NULL);
 
 	DestroyMenu(hMenuLoad);
+}
+
+
+//============================================================
+//  IPS patch context menu (MAMEPlus port)
+//============================================================
+
+static void InitIPSContextMenu(HMENU hMenu)
+{
+	int const drvindex = Picker_GetSelectedItem(hwndList);
+	if (drvindex < 0)
+		return;
+
+	char const *const game_name = driver_list::driver(drvindex).name;
+	int patch_count = GetPatchCount(game_name);
+	if (patch_count <= 0)
+		return;
+	if (patch_count > MAX_PATCHES)
+		patch_count = MAX_PATCHES;
+
+	windows_options o;
+	load_options(o, OPTIONS_GAME, drvindex, false);
+	std::string const cur_ips(o.value(OPTION_IPS));
+
+	// walk patches in reverse so items end up top-down after inserting at position 1
+	for (int patch_index = patch_count - 1; patch_index >= 0; patch_index--)
+	{
+		std::wstring patch_filename;
+		if (!GetPatchFilename(patch_filename, game_name, patch_index))
+			continue;
+
+		// display name: first line of the .dat description if present, else the file name;
+		// a "Category/Name" description groups the patch under a submenu
+		std::wstring display = GetPatchDesc(game_name, patch_filename);
+		size_t const nl = display.find(L'\n');
+		if (nl != std::wstring::npos)
+			display.resize(nl);
+		while (!display.empty() && display.back() == L'\r')
+			display.pop_back();
+		if (display.empty())
+			display = patch_filename;
+
+		// is this patch already enabled for the game?
+		bool checked = false;
+		char *const patch_utf8 = ui_utf8_from_wstring(patch_filename.c_str());
+		std::string const patch_str(patch_utf8 ? patch_utf8 : "");
+		if (patch_utf8)
+			free(patch_utf8);
+		{
+			size_t pos = 0;
+			while (pos < cur_ips.size())
+			{
+				size_t const comma = cur_ips.find(',', pos);
+				std::string const token = cur_ips.substr(pos, ((comma == std::string::npos) ? cur_ips.size() : comma) - pos);
+				if (token == patch_str)
+				{
+					checked = true;
+					break;
+				}
+				if (comma == std::string::npos)
+					break;
+				pos = comma + 1;
+			}
+		}
+
+		HMENU target = hMenu;
+		size_t const slash = display.find(L'/');
+		if (slash != std::wstring::npos)
+		{
+			// category item: reuse the submenu when one already exists
+			std::wstring const category = display.substr(0, slash);
+			std::wstring const sub_item = display.substr(slash + 1);
+
+			for (int i = 1; i < GetMenuItemCount(hMenu); i++)
+			{
+				WCHAR text[128];
+				HMENU const sub = GetSubMenu(hMenu, i);
+				if (sub && GetMenuStringW(hMenu, i, text, 127, MF_BYPOSITION) && !wcscmp(text, category.c_str()))
+				{
+					target = sub;
+					break;
+				}
+			}
+
+			if (target == hMenu)
+			{
+				HMENU const sub = CreateMenu();
+				InsertMenuW(sub, 0, MF_BYPOSITION | MF_STRING, ID_PLAY_IPS + patch_index, (std::wstring(L"   ") + sub_item).c_str());
+				InsertMenuW(hMenu, 1, MF_BYPOSITION | MF_STRING | MF_POPUP, (UINT_PTR)sub, category.c_str());
+			}
+			else
+			{
+				InsertMenuW(target, 0, MF_BYPOSITION | MF_STRING, ID_PLAY_IPS + patch_index, (std::wstring(L"   ") + sub_item).c_str());
+			}
+		}
+		else
+		{
+			InsertMenuW(hMenu, 1, MF_BYPOSITION | MF_STRING, ID_PLAY_IPS + patch_index, (std::wstring(L"   ") + display).c_str());
+		}
+
+		if (checked)
+			CheckMenuItem(target, ID_PLAY_IPS + patch_index, MF_BYCOMMAND | MF_CHECKED);
+	}
 }
 
 
@@ -5905,6 +6081,8 @@ static BOOL HandleScreenShotContextMenu(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	HMENU hMenu = GetSubMenu(hMenuLoad, 0);
 
 	UpdateMenu(hMenu);
+
+	winui_translate_menu(hMenu); // MAMEPlus port
 
 	TrackPopupMenu(hMenu,TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,0,hWnd,NULL);
 
@@ -6650,6 +6828,7 @@ static void SwitchFullScreenMode()
 
 		// Restore the menu
 		SetMenu(hMain, LoadMenu(hInst,MAKEINTRESOURCE(IDR_UI_MENU)));
+		winui_translate_menu(GetMenu(hMain)); // MAMEPlus port
 
 		// Refresh the checkmarks
 		CheckMenuItem(GetMenu(hMain), ID_VIEW_FOLDERS, BIT(GetWindowPanes(), 0) ? MF_CHECKED : MF_UNCHECKED);

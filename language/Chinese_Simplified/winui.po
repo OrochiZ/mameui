@@ -1,0 +1,727 @@
+# MAMEPlus port: MAMEUI GUI self-translation.
+# Kept separate from the official strings.po so upstream files stay
+# untouched. Loaded by the MAMEUI GUI as winui.mo (msgctxt "winui").
+msgid ""
+msgstr ""
+"Project-Id-Version: MAMEUI Plus\n"
+"Language: zh_CN\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgctxt "winui"
+msgid "&File"
+msgstr "文件(&F)"
+
+msgctxt "winui"
+msgid "&Play"
+msgstr "开始游戏(&P)"
+
+msgctxt "winui"
+msgid "Play and Record &Input..."
+msgstr "游戏并录制输入(&I)..."
+
+msgctxt "winui"
+msgid "P&layback Input..."
+msgstr "回放输入(&L)..."
+
+msgctxt "winui"
+msgid "Play and Record &Wave Output..."
+msgstr "游戏并录制 Wave 输出(&W)..."
+
+msgctxt "winui"
+msgid "Play and Record &MNG Output..."
+msgstr "游戏并录制 MNG 输出(&M)..."
+
+msgctxt "winui"
+msgid "Play and Record &uncompressed AVI Output..."
+msgstr "游戏并录制无损 AVI 输出(&U)..."
+
+msgctxt "winui"
+msgid "Loa&d Savestate..."
+msgstr "读取存档状态(&D)..."
+
+msgctxt "winui"
+msgid "&Select Random Game"
+msgstr "随机选择游戏(&S)"
+
+msgctxt "winui"
+msgid "Op&en Other Software..."
+msgstr "打开其他软件(&E)..."
+
+msgctxt "winui"
+msgid "Pr&operties"
+msgstr "属性(&O)"
+
+msgctxt "winui"
+msgid "Audi&t existing sets"
+msgstr "审计已有 ROM 集(&T)"
+
+msgctxt "winui"
+msgid "&Audit all sets"
+msgstr "审计全部 ROM 集(&A)"
+
+msgctxt "winui"
+msgid "&Refresh Roms"
+msgstr "刷新 ROM(&R)"
+
+msgctxt "winui"
+msgid "Refresh Cache"
+msgstr "刷新缓存"
+
+msgctxt "winui"
+msgid "Save filter"
+msgstr "保存过滤"
+
+msgctxt "winui"
+msgid "E&xit"
+msgstr "退出(&X)"
+
+msgctxt "winui"
+msgid "&View"
+msgstr "查看(&V)"
+
+msgctxt "winui"
+msgid "&Toolbar"
+msgstr "工具栏(&T)"
+
+msgctxt "winui"
+msgid "&Status bar"
+msgstr "状态栏(&S)"
+
+msgctxt "winui"
+msgid "Fold&er List"
+msgstr "文件夹列表(&E)"
+
+msgctxt "winui"
+msgid "&Picture Area"
+msgstr "图像区(&P)"
+
+msgctxt "winui"
+msgid "Software Area"
+msgstr "软件区"
+
+msgctxt "winui"
+msgid "Screenshot Ta&bs"
+msgstr "截图页签(&B)"
+
+msgctxt "winui"
+msgid "&Fullscreen"
+msgstr "全屏(&F)"
+
+msgctxt "winui"
+msgid "S&how Pictures"
+msgstr "显示图片(&H)"
+
+msgctxt "winui"
+msgid "Artwork"
+msgstr "插画"
+
+msgctxt "winui"
+msgid "Boss"
+msgstr "Boss 画面"
+
+msgctxt "winui"
+msgid "Cabinet"
+msgstr "机台"
+
+msgctxt "winui"
+msgid "Control Panel"
+msgstr "操作面板"
+
+msgctxt "winui"
+msgid "Cover"
+msgstr "封面"
+
+msgctxt "winui"
+msgid "End"
+msgstr "结尾画面"
+
+msgctxt "winui"
+msgid "Flyer"
+msgstr "海报"
+
+msgctxt "winui"
+msgid "Game Over"
+msgstr "Game Over 画面"
+
+msgctxt "winui"
+msgid "History"
+msgstr "历史"
+
+msgctxt "winui"
+msgid "How To"
+msgstr "攻略"
+
+msgctxt "winui"
+msgid "Logo"
+msgstr "标志"
+
+msgctxt "winui"
+msgid "Marquee"
+msgstr "灯箱"
+
+msgctxt "winui"
+msgid "PCB"
+msgstr "基板"
+
+msgctxt "winui"
+msgid "Scores"
+msgstr "高分榜"
+
+msgctxt "winui"
+msgid "Select"
+msgstr "选人画面"
+
+msgctxt "winui"
+msgid "Snapshot"
+msgstr "截图"
+
+msgctxt "winui"
+msgid "Title"
+msgstr "标题画面"
+
+msgctxt "winui"
+msgid "Versus"
+msgstr "对战画面"
+
+msgctxt "winui"
+msgid "L&arge Icons"
+msgstr "大图标(&A)"
+
+msgctxt "winui"
+msgid "S&mall Icons"
+msgstr "小图标(&M)"
+
+msgctxt "winui"
+msgid "&List"
+msgstr "列表(&L)"
+
+msgctxt "winui"
+msgid "&Details"
+msgstr "详细信息(&D)"
+
+msgctxt "winui"
+msgid "&Grouped"
+msgstr "分组(&G)"
+
+msgctxt "winui"
+msgid "Indent Clones"
+msgstr "缩进克隆"
+
+msgctxt "winui"
+msgid "Arrange &Icons"
+msgstr "排列图标(&I)"
+
+msgctxt "winui"
+msgid "by &Description"
+msgstr "按描述(&D)"
+
+msgctxt "winui"
+msgid "by &Screen"
+msgstr "按屏幕方向(&S)"
+
+msgctxt "winui"
+msgid "by S&amples"
+msgstr "按样本数(&A)"
+
+msgctxt "winui"
+msgid "by &Name"
+msgstr "按名称(&N)"
+
+msgctxt "winui"
+msgid "by &Type"
+msgstr "按类型(&T)"
+
+msgctxt "winui"
+msgid "by T&rackball"
+msgstr "按轨迹球(&R)"
+
+msgctxt "winui"
+msgid "by &Played"
+msgstr "按游玩次数(&P)"
+
+msgctxt "winui"
+msgid "by &Manufacturer"
+msgstr "按厂商(&M)"
+
+msgctxt "winui"
+msgid "by &Year"
+msgstr "按年份(&Y)"
+
+msgctxt "winui"
+msgid "by &Clone Of"
+msgstr "按克隆源(&C)"
+
+msgctxt "winui"
+msgid "by Dr&iver"
+msgstr "按驱动(&I)"
+
+msgctxt "winui"
+msgid "by P&lay Time"
+msgstr "按游玩时间(&L)"
+
+msgctxt "winui"
+msgid "by R&OMs"
+msgstr "按 ROM 数(&O)"
+
+msgctxt "winui"
+msgid "Line &Up Icons"
+msgstr "对齐图标(&U)"
+
+msgctxt "winui"
+msgid "&Custom Filters..."
+msgstr "自定义过滤(&C)..."
+
+msgctxt "winui"
+msgid "Cust&omise Fields..."
+msgstr "自定义字段(&O)..."
+
+msgctxt "winui"
+msgid "&Options"
+msgstr "选项(&O)"
+
+msgctxt "winui"
+msgid "&Directories..."
+msgstr "目录(&D)..."
+
+msgctxt "winui"
+msgid "&Interface Options..."
+msgstr "界面选项(&I)..."
+
+msgctxt "winui"
+msgid "&Reset to Default..."
+msgstr "重置为默认(&R)..."
+
+msgctxt "winui"
+msgid "&Help"
+msgstr "帮助(&H)"
+
+msgctxt "winui"
+msgid "&Contents"
+msgstr "目录(&C)"
+
+msgctxt "winui"
+msgid "&Troubleshooting"
+msgstr "疑难解答(&T)"
+
+msgctxt "winui"
+msgid "&New Game Changes"
+msgstr "游戏更新说明(&N)"
+
+msgctxt "winui"
+msgid "&About MAME..."
+msgstr "关于 MAME(&A)..."
+
+msgctxt "winui"
+msgid "&About"
+msgstr "关于(&A)"
+
+msgctxt "winui"
+msgid "&Edit"
+msgstr "编辑(&E)"
+
+msgctxt "winui"
+msgid "&Media"
+msgstr "媒体(&M)"
+
+msgctxt "winui"
+msgid "&Keyboard"
+msgstr "键盘(&K)"
+
+msgctxt "winui"
+msgid "&Joysticks"
+msgstr "摇杆(&J)"
+
+msgctxt "winui"
+msgid "&Video"
+msgstr "视频(&V)"
+
+msgctxt "winui"
+msgid "&Configuration"
+msgstr "配置(&C)"
+
+msgctxt "winui"
+msgid "&DIP Switches..."
+msgstr "DIP 开关(&D)..."
+
+msgctxt "winui"
+msgid "&Analog Controls..."
+msgstr "模拟控制(&A)..."
+
+msgctxt "winui"
+msgid "&Miscellaneous Inputs..."
+msgstr "其他输入(&M)..."
+
+msgctxt "winui"
+msgid "&Add to Custom Folder..."
+msgstr "添加到自定义文件夹(&A)..."
+
+msgctxt "winui"
+msgid "&Rename"
+msgstr "重命名(&R)"
+
+msgctxt "winui"
+msgid "&Load State..."
+msgstr "读取状态(&L)..."
+
+msgctxt "winui"
+msgid "&Save State"
+msgstr "保存状态(&S)"
+
+msgctxt "winui"
+msgid "S&ave State As..."
+msgstr "状态另存为(&A)..."
+
+msgctxt "winui"
+msgid "S&oft Reset"
+msgstr "软复位(&O)"
+
+msgctxt "winui"
+msgid "Ha&rd Reset"
+msgstr "硬复位(&R)"
+
+msgctxt "winui"
+msgid "&Pause"
+msgstr "暂停(&P)"
+
+msgctxt "winui"
+msgid "Show F&PS"
+msgstr "显示 FPS(&P)"
+
+msgctxt "winui"
+msgid "&Full Screen"
+msgstr "全屏(&F)"
+
+msgctxt "winui"
+msgid "&Hide Menubar"
+msgstr "隐藏菜单栏(&H)"
+
+msgctxt "winui"
+msgid "&Show Folders"
+msgstr "显示文件夹(&S)"
+
+msgctxt "winui"
+msgid "Show Tab &Control"
+msgstr "显示页签栏(&C)"
+
+msgctxt "winui"
+msgid "&Frameskip"
+msgstr "跳帧(&F)"
+
+msgctxt "winui"
+msgid "A&udit"
+msgstr "审计(&U)"
+
+msgctxt "winui"
+msgid "&Audit"
+msgstr "审计(&A)"
+
+msgctxt "winui"
+msgid "Audit"
+msgstr "审计"
+
+msgctxt "winui"
+msgid "Rese&t Playcount"
+msgstr "重置游玩次数(&T)"
+
+msgctxt "winui"
+msgid "Reset Pla&y Time"
+msgstr "重置游玩时间(&Y)"
+
+msgctxt "winui"
+msgid "Properties &for BIOS"
+msgstr "BIOS 属性(&F)"
+
+msgctxt "winui"
+msgid "R&emove From This Folder"
+msgstr "从此文件夹移除(&E)"
+
+msgctxt "winui"
+msgid "Default System &Options..."
+msgstr "默认系统选项(&O)..."
+
+msgctxt "winui"
+msgid "Delete game settings"
+msgstr "删除游戏设置"
+
+msgctxt "winui"
+msgid "Customise Emulated Keyboard..."
+msgstr "自定义模拟键盘(&K)..."
+
+msgctxt "winui"
+msgid "Sort &Ascending"
+msgstr "升序排序(&S)"
+
+msgctxt "winui"
+msgid "Sort &Descending"
+msgstr "降序排序(&D)"
+
+msgctxt "winui"
+msgid "Save Sc&reenshot"
+msgstr "保存截图(&R)"
+
+msgctxt "winui"
+msgid "Open history in Notepad"
+msgstr "用记事本打开历史"
+
+msgctxt "winui"
+msgid "Read the PDF Manual"
+msgstr "阅读 PDF 手册"
+
+msgctxt "winui"
+msgid "Play ProgettoSnaps MP4 movie"
+msgstr "播放 ProgettoSnaps MP4 影片"
+
+msgctxt "winui"
+msgid "About This System..."
+msgstr "关于本系统(&T)..."
+
+msgctxt "winui"
+msgid "What's New in MAME"
+msgstr "MAME 更新内容"
+
+msgctxt "winui"
+msgid "Auto"
+msgstr "自动"
+
+msgctxt "winui"
+msgid "Unlimited"
+msgstr "不限"
+
+msgctxt "winui"
+msgid "Rotate 0 degrees"
+msgstr "0 度"
+
+msgctxt "winui"
+msgid "Rotate 90 degrees"
+msgstr "90 度"
+
+msgctxt "winui"
+msgid "Rotate 180 degrees"
+msgstr "180 度"
+
+msgctxt "winui"
+msgid "Rotate 270 degrees"
+msgstr "270 度"
+
+msgctxt "winui"
+msgid "Emulated"
+msgstr "模拟"
+
+msgctxt "winui"
+msgid "Natural"
+msgstr "自然"
+
+msgctxt "winui"
+msgid "Partial Keyboard Emulation"
+msgstr "部分键盘模拟"
+
+msgctxt "winui"
+msgid "Screen"
+msgstr "屏幕"
+
+msgctxt "winui"
+msgid "Sound"
+msgstr "声音"
+
+msgctxt "winui"
+msgid "Display"
+msgstr "显示"
+
+msgctxt "winui"
+msgid "Miscellaneous"
+msgstr "杂项"
+
+msgctxt "winui"
+msgid "General"
+msgstr "常规"
+
+msgctxt "winui"
+msgid "Advanced"
+msgstr "高级"
+
+msgctxt "winui"
+msgid "Controllers"
+msgstr "控制器"
+
+msgctxt "winui"
+msgid "Controller Mapping"
+msgstr "控制器映射"
+
+msgctxt "winui"
+msgid "Loose Software"
+msgstr "散装软件"
+
+msgctxt "winui"
+msgid "Directories"
+msgstr "目录"
+
+msgctxt "winui"
+msgid "Customise Fields"
+msgstr "自定义字段"
+
+msgctxt "winui"
+msgid "Interface Options"
+msgstr "界面选项"
+
+msgctxt "winui"
+msgid "Reset Options"
+msgstr "重置选项"
+
+msgctxt "winui"
+msgid "File Audit"
+msgstr "文件审计"
+
+msgctxt "winui"
+msgid "System Filters"
+msgstr "系统过滤"
+
+msgctxt "winui"
+msgid "Snap/Input/Output"
+msgstr "截图/输入/输出"
+
+msgctxt "winui"
+msgid "OpenGL shaders"
+msgstr "OpenGL 着色器"
+
+msgctxt "winui"
+msgid "About MAMEUI Classic"
+msgstr "关于 MAMEUI Classic"
+
+msgctxt "winui"
+msgid "About MESSUI"
+msgstr "关于 MESSUI"
+
+msgctxt "winui"
+msgid "Add Game To Custom Folder"
+msgstr "添加游戏到自定义文件夹"
+
+# folder tree names
+msgctxt "winui"
+msgid "All Games"
+msgstr "全部游戏"
+
+msgctxt "winui"
+msgid "Available"
+msgstr "可运行"
+
+msgctxt "winui"
+msgid "Clones"
+msgstr "克隆"
+
+msgctxt "winui"
+msgid "Dumping Status"
+msgstr "转储状态"
+
+msgctxt "winui"
+msgid "Horizontal"
+msgstr "横屏"
+
+msgctxt "winui"
+msgid "Imperfect"
+msgstr "不完美"
+
+msgctxt "winui"
+msgid "Lightgun"
+msgstr "光枪"
+
+msgctxt "winui"
+msgid "Manufacturer"
+msgstr "厂商"
+
+msgctxt "winui"
+msgid "Mechanical"
+msgstr "机械"
+
+msgctxt "winui"
+msgid "Non Mechanical"
+msgstr "非机械"
+
+msgctxt "winui"
+msgid "Not Working"
+msgstr "不能运行"
+
+msgctxt "winui"
+msgid "Parents"
+msgstr "母体"
+
+msgctxt "winui"
+msgid "Raster"
+msgstr "光栅"
+
+msgctxt "winui"
+msgid "Resolution"
+msgstr "分辨率"
+
+msgctxt "winui"
+msgid "Samples"
+msgstr "样本数"
+
+msgctxt "winui"
+msgid "Save State"
+msgstr "存档状态"
+
+msgctxt "winui"
+msgid "Screens"
+msgstr "屏幕"
+
+msgctxt "winui"
+msgid "Source"
+msgstr "源驱动"
+
+msgctxt "winui"
+msgid "Stereo"
+msgstr "立体声"
+
+msgctxt "winui"
+msgid "Trackball"
+msgstr "轨迹球"
+
+msgctxt "winui"
+msgid "Unavailable"
+msgstr "不可运行"
+
+msgctxt "winui"
+msgid "Vector"
+msgstr "矢量"
+
+msgctxt "winui"
+msgid "Vertical"
+msgstr "竖屏"
+
+msgctxt "winui"
+msgid "Working"
+msgstr "正常运行"
+
+msgctxt "winui"
+msgid "Year"
+msgstr "年份"
+
+# list view column headers
+msgctxt "winui"
+msgid "Machine"
+msgstr "游戏"
+
+msgctxt "winui"
+msgid "Short Name"
+msgstr "短名称"
+
+msgctxt "winui"
+msgid "Type"
+msgstr "类型"
+
+msgctxt "winui"
+msgid "Played"
+msgstr "游玩次数"
+
+msgctxt "winui"
+msgid "Play Time"
+msgstr "游玩时间"
+
+msgctxt "winui"
+msgid "Clone Of"
+msgstr "克隆源"
+
+msgctxt "winui"
+msgid "ROMs"
+msgstr "ROM 数"

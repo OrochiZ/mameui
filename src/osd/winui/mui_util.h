@@ -68,5 +68,11 @@ DWORD win_get_current_directory_utf8(size_t bufferlength, char* buffer);
 HANDLE win_find_first_file_utf8(const char* filename, LPWIN32_FIND_DATA findfiledata);
 void ErrorMessageBox(const char *fmt, ...);
 
+// MAMEPlus port: IPS patch helpers (enumerate ips/<driver>/*.dat under -ipspath)
+#include <string>
+int GetPatchCount(const char *game_name);
+bool GetPatchFilename(std::wstring &patch_name, const char *game_name, int patch_index);
+std::wstring GetPatchDesc(const char *game_name, const std::wstring &patch_name);
+
 #endif /* MUI_UTIL_H */
 

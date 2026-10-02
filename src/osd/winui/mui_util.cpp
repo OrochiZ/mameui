@@ -22,6 +22,7 @@
 #include "unzip.h"
 #include "sound/samples.h"
 #include "winutf8.h"
+#include "strconv.h"
 #include "winui.h"
 #include "mui_util.h"
 #include "mui_opts.h"
@@ -920,6 +921,134 @@ HANDLE win_find_first_file_utf8(const char* filename, LPWIN32_FIND_DATA findfile
 
 	free(t_filename);
 
+	return result;
+}
+
+
+//============================================================
+//  IPS patch helpers (MAMEPlus port)
+//
+//  Layout: <ipspath>/<driver>/<patch>.dat; the .dat may carry a
+//  description in its first "[section]" body, "Category/Name".
+//============================================================
+
+int GetPatchCount(const char *game_name)
+{
+	if (!game_name || !*game_name)
+		return 0;
+
+	int count = 0;
+	TCHAR* t_pattern = ui_wstring_from_utf8(string_format("%s\\%s\\*.dat", GetIPSDir().c_str(), game_name).c_str());
+	if (!t_pattern)
+		return 0;
+
+	WIN32_FIND_DATAW ffd;
+	HANDLE hFile = FindFirstFileW(t_pattern, &ffd);
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			count++;
+		}
+		while (FindNextFileW(hFile, &ffd));
+		FindClose(hFile);
+	}
+
+	free(t_pattern);
+	return count;
+}
+
+bool GetPatchFilename(std::wstring &patch_name, const char *game_name, int patch_index)
+{
+	TCHAR* t_pattern = ui_wstring_from_utf8(string_format("%s\\%s\\*.dat", GetIPSDir().c_str(), game_name).c_str());
+	if (!t_pattern)
+		return false;
+
+	bool found = false;
+	WIN32_FIND_DATAW ffd;
+	HANDLE hFile = FindFirstFileW(t_pattern, &ffd);
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		int count = 0;
+		BOOL done = FALSE;
+		while (!done)
+		{
+			if (count == patch_index)
+			{
+				patch_name = ffd.cFileName;
+				if (patch_name.size() > 4)
+					patch_name.resize(patch_name.size() - 4);   // trim the ".dat"
+				found = true;
+				done = TRUE;
+				break;
+			}
+			count++;
+			done = !FindNextFileW(hFile, &ffd);
+		}
+		FindClose(hFile);
+	}
+
+	free(t_pattern);
+	return found;
+}
+
+std::wstring GetPatchDesc(const char *game_name, const std::wstring &patch_name)
+{
+	std::string fname_utf8 = string_format("%s\\%s\\", GetIPSDir().c_str(), game_name);
+	char *const patch_utf8 = ui_utf8_from_wstring(patch_name.c_str());
+	if (patch_utf8)
+	{
+		fname_utf8 += patch_utf8;
+		free(patch_utf8);
+	}
+	fname_utf8 += ".dat";
+
+	std::wstring result;
+	TCHAR* t_filename = ui_wstring_from_utf8(fname_utf8.c_str());
+	if (!t_filename)
+		return result;
+
+	FILE *fp = _tfopen(t_filename, TEXT("r"));
+	free(t_filename);
+	if (!fp)
+		return result;
+
+	// collect the body of the first "[section]" (0.287u has no language
+	// framework, so there is no per-language lookup like Plus had)
+	std::string body;
+	bool in_section = false;
+	char line[4096];
+	while (fgets(line, sizeof(line), fp) != NULL)
+	{
+		size_t len = strlen(line);
+		while (len && (line[len - 1] == '\r' || line[len - 1] == '\n'))
+			line[--len] = '\0';
+
+		if (line[0] == '[')
+		{
+			if (in_section)
+				break;      // next section started
+			in_section = true;
+			continue;
+		}
+		if (in_section && line[0])
+		{
+			if (!body.empty())
+				body += "\r\n";
+			body += line;
+		}
+	}
+	fclose(fp);
+
+	if (!body.empty())
+	{
+		TCHAR* t_body = ui_wstring_from_utf8(body.c_str());
+		if (t_body)
+		{
+			result = t_body;
+			free(t_body);
+		}
+	}
 	return result;
 }
 

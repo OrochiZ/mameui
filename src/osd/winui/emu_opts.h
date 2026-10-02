@@ -70,6 +70,9 @@ void OptionsCopy(windows_options &source, windows_options &dest);
 void SetDirectories(windows_options &opts);
 void load_options(windows_options &, OPTIONS_TYPE, int, bool);
 void save_options(windows_options &opts, OPTIONS_TYPE opt_type, int drvindex);
+// MAMEPlus port: IPS patch directory (core -ipspath option)
+const std::string GetIPSDir();
+void SetIPSDir(const char *path);
 
 
 #endif
