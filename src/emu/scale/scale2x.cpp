@@ -49,7 +49,7 @@
 /* #define USE_SCALE_RANDOMWRITE */
 
 #if 0
-inline void scale2x_8_def_whole(scale2x_uint8* restrict dst0, scale2x_uint8* restrict dst1, const scale2x_uint8* restrict src0, const scale2x_uint8* restrict src1, const scale2x_uint8* restrict src2, unsigned count)
+inline void scale2x_8_def_whole(scale2x_uint8* __restrict dst0, scale2x_uint8* __restrict dst1, const scale2x_uint8* __restrict src0, const scale2x_uint8* __restrict src1, const scale2x_uint8* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -108,7 +108,7 @@ inline void scale2x_8_def_whole(scale2x_uint8* restrict dst0, scale2x_uint8* res
 	}
 }
 
-inline void scale2x_8_def_border(scale2x_uint8* restrict dst, const scale2x_uint8* restrict src0, const scale2x_uint8* restrict src1, const scale2x_uint8* restrict src2, unsigned count)
+inline void scale2x_8_def_border(scale2x_uint8* __restrict dst, const scale2x_uint8* __restrict src0, const scale2x_uint8* __restrict src1, const scale2x_uint8* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -153,7 +153,7 @@ inline void scale2x_8_def_border(scale2x_uint8* restrict dst, const scale2x_uint
 	}
 }
 
-inline void scale2x_8_def_center(scale2x_uint8* restrict dst, const scale2x_uint8* restrict src0, const scale2x_uint8* restrict src1, const scale2x_uint8* restrict src2, unsigned count)
+inline void scale2x_8_def_center(scale2x_uint8* __restrict dst, const scale2x_uint8* __restrict src0, const scale2x_uint8* __restrict src1, const scale2x_uint8* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -199,7 +199,7 @@ inline void scale2x_8_def_center(scale2x_uint8* restrict dst, const scale2x_uint
 }
 #endif
 
-inline void scale2x_16_def_whole(scale2x_uint16* restrict dst0, scale2x_uint16* restrict dst1, const scale2x_uint16* restrict src0, const scale2x_uint16* restrict src1, const scale2x_uint16* restrict src2, unsigned count)
+inline void scale2x_16_def_whole(scale2x_uint16* __restrict dst0, scale2x_uint16* __restrict dst1, const scale2x_uint16* __restrict src0, const scale2x_uint16* __restrict src1, const scale2x_uint16* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -258,7 +258,7 @@ inline void scale2x_16_def_whole(scale2x_uint16* restrict dst0, scale2x_uint16* 
 	}
 }
 
-inline void scale2x_16_def_border(scale2x_uint16* restrict dst, const scale2x_uint16* restrict src0, const scale2x_uint16* restrict src1, const scale2x_uint16* restrict src2, unsigned count)
+inline void scale2x_16_def_border(scale2x_uint16* __restrict dst, const scale2x_uint16* __restrict src0, const scale2x_uint16* __restrict src1, const scale2x_uint16* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -303,7 +303,7 @@ inline void scale2x_16_def_border(scale2x_uint16* restrict dst, const scale2x_ui
 	}
 }
 
-inline void scale2x_16_def_center(scale2x_uint16* restrict dst, const scale2x_uint16* restrict src0, const scale2x_uint16* restrict src1, const scale2x_uint16* restrict src2, unsigned count)
+inline void scale2x_16_def_center(scale2x_uint16* __restrict dst, const scale2x_uint16* __restrict src0, const scale2x_uint16* __restrict src1, const scale2x_uint16* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -348,7 +348,7 @@ inline void scale2x_16_def_center(scale2x_uint16* restrict dst, const scale2x_ui
 	}
 }
 
-inline void scale2x_32_def_whole(scale2x_uint32* restrict dst0, scale2x_uint32* restrict dst1, const scale2x_uint32* restrict src0, const scale2x_uint32* restrict src1, const scale2x_uint32* restrict src2, unsigned count)
+inline void scale2x_32_def_whole(scale2x_uint32* __restrict dst0, scale2x_uint32* __restrict dst1, const scale2x_uint32* __restrict src0, const scale2x_uint32* __restrict src1, const scale2x_uint32* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -407,7 +407,7 @@ inline void scale2x_32_def_whole(scale2x_uint32* restrict dst0, scale2x_uint32* 
 	}
 }
 
-inline void scale2x_32_def_border(scale2x_uint32* restrict dst, const scale2x_uint32* restrict src0, const scale2x_uint32* restrict src1, const scale2x_uint32* restrict src2, unsigned count)
+inline void scale2x_32_def_border(scale2x_uint32* __restrict dst, const scale2x_uint32* __restrict src0, const scale2x_uint32* __restrict src1, const scale2x_uint32* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 
@@ -452,7 +452,7 @@ inline void scale2x_32_def_border(scale2x_uint32* restrict dst, const scale2x_ui
 	}
 }
 
-inline void scale2x_32_def_center(scale2x_uint32* restrict dst, const scale2x_uint32* restrict src0, const scale2x_uint32* restrict src1, const scale2x_uint32* restrict src2, unsigned count)
+inline void scale2x_32_def_center(scale2x_uint32* __restrict dst, const scale2x_uint32* __restrict src0, const scale2x_uint32* __restrict src1, const scale2x_uint32* __restrict src2, unsigned count)
 {
 	assert(count >= 2);
 

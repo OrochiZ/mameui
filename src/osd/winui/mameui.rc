@@ -59,6 +59,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Loa&d Savestate...",          ID_FILE_LOADSTATE, GRAYED
         MENUITEM SEPARATOR
+        MENUITEM "&Select Random Game",         ID_CONTEXT_SELECT_RANDOM
+        MENUITEM SEPARATOR
         MENUITEM "Op&en Other Software...",     ID_MESS_OPEN_SOFTWARE
         MENUITEM SEPARATOR
         MENUITEM "Pr&operties",                 ID_GAME_PROPERTIES
@@ -108,18 +110,29 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "L&arge Icons",                ID_VIEW_LARGE_ICON
         MENUITEM "S&mall Icons",                ID_VIEW_SMALL_ICON
+        MENUITEM "&List",                       ID_VIEW_LIST_MENU
+        MENUITEM "&Details",                    ID_VIEW_DETAIL
+        MENUITEM "&Grouped",                    ID_VIEW_GROUPED
         MENUITEM SEPARATOR
         MENUITEM "Indent Clones",                   ID_VIEW_INDENT
         MENUITEM SEPARATOR
-        POPUP "Sort Games"
+        POPUP "Arrange &Icons"
         BEGIN
-            MENUITEM "by &Name",                    ID_VIEW_BYGAME
-            MENUITEM "by D&irectory",               ID_VIEW_BYDIRECTORY
-            MENUITEM "by &Manufacturer",            ID_VIEW_BYMANUFACTURER
-            MENUITEM "by Times &Played",            ID_VIEW_BYTIMESPLAYED
+            MENUITEM "by &Description",             ID_VIEW_BYGAME
+            MENUITEM "by &Screen",                  ID_VIEW_ORIENTATION
+            MENUITEM "by S&amples",                 ID_VIEW_BYSAMPLES
+            MENUITEM "by &Name",                    ID_VIEW_BYDIRECTORY
             MENUITEM "by &Type",                    ID_VIEW_BYTYPE
-            MENUITEM "by &Date",                    ID_VIEW_BYYEAR
+            MENUITEM "by T&rackball",               ID_VIEW_TRACKBALL
+            MENUITEM "by &Played",                  ID_VIEW_BYTIMESPLAYED
+            MENUITEM "by &Manufacturer",            ID_VIEW_BYMANUFACTURER
+            MENUITEM "by &Year",                    ID_VIEW_BYYEAR
+            MENUITEM "by &Clone Of",                ID_VIEW_BYCLONE
+            MENUITEM "by Dr&iver",                  ID_VIEW_BYSRCDRIVERS
+            MENUITEM "by P&lay Time",               ID_VIEW_BYPLAYTIME
+            MENUITEM "by R&OMs",                    ID_VIEW_BYROMS
         END
+        MENUITEM "Line &Up Icons",              ID_VIEW_LINEUPICONS
         MENUITEM SEPARATOR
         MENUITEM "&Custom Filters...\tCtrl+F",  ID_CONTEXT_FILTERS
         MENUITEM "Cust&omise Fields...",        ID_CUSTOMIZE_FIELDS
@@ -136,10 +149,12 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-//        MENUITEM "&Mess Release Notes",         ID_HELP_RELEASE
-        MENUITEM "What's New in MAME",          ID_HELP_WHATS_NEW
         MENUITEM "&Contents\tF1",               ID_HELP_CONTENTS
-//        MENUITEM "&Troubleshooting",            ID_HELP_TROUBLE
+        MENUITEM "&Troubleshooting",            ID_HELP_TROUBLE
+        MENUITEM SEPARATOR
+        MENUITEM "&New Game Changes",           ID_HELP_WHATS_NEWUI
+        MENUITEM "What's New in MAME",          ID_HELP_WHATS_NEW
+        MENUITEM SEPARATOR
         MENUITEM "&About",                      ID_HELP_ABOUT
     END
 END
@@ -160,12 +175,16 @@ BEGIN
         MENUITEM "R&emove From This Folder",    ID_CONTEXT_REMOVE_CUSTOM
         MENUITEM "&Custom Filters...",          ID_CONTEXT_FILTERS
         MENUITEM SEPARATOR
-        MENUITEM "Rese&t Play Stats",           ID_CONTEXT_RESET_PLAYSTATS
+        MENUITEM "&Select Random Game",         ID_CONTEXT_SELECT_RANDOM
+        MENUITEM SEPARATOR
+        MENUITEM "Rese&t Playcount",            ID_CONTEXT_RESET_PLAYCOUNT
+        MENUITEM "Reset Pla&y Time",            ID_CONTEXT_RESET_PLAYTIME
         MENUITEM SEPARATOR
         MENUITEM "A&udit",                      ID_GAME_AUDIT
         MENUITEM SEPARATOR
         MENUITEM "Pr&operties",                 ID_GAME_PROPERTIES
         MENUITEM "Properties for driver",       ID_FOLDER_SOURCEPROPERTIES
+        MENUITEM "Properties &for BIOS",        ID_BIOS_PROPERTIES
     END
 END
 

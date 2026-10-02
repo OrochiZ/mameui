@@ -3918,6 +3918,52 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 		Picker_Sort(hwndList);
 		break;
 
+	// MAMEPlus port: extended Arrange Icons sort entries
+	case ID_VIEW_ORIENTATION:
+		SetSortReverse(false);
+		SetSortColumn(COLUMN_ORIENTATION);
+		Picker_Sort(hwndList);
+		break;
+
+	case ID_VIEW_BYSAMPLES:
+		SetSortReverse(false);
+		SetSortColumn(COLUMN_SAMPLES);
+		Picker_Sort(hwndList);
+		break;
+
+	case ID_VIEW_TRACKBALL:
+		SetSortReverse(false);
+		SetSortColumn(COLUMN_TRACKBALL);
+		Picker_Sort(hwndList);
+		break;
+
+	case ID_VIEW_BYCLONE:
+		SetSortReverse(false);
+		SetSortColumn(COLUMN_CLONE);
+		Picker_Sort(hwndList);
+		break;
+
+	case ID_VIEW_BYSRCDRIVERS:
+		SetSortReverse(false);
+		SetSortColumn(COLUMN_SRCDRIVERS);
+		Picker_Sort(hwndList);
+		break;
+
+	case ID_VIEW_BYPLAYTIME:
+		SetSortReverse(false);
+		SetSortColumn(COLUMN_PLAYTIME);
+		Picker_Sort(hwndList);
+		break;
+
+	case ID_VIEW_BYROMS:
+		SetSortReverse(false);
+		SetSortColumn(COLUMN_ROMS);
+		Picker_Sort(hwndList);
+		break;
+
+	// MAMEPlus port: ID_VIEW_LINEUPICONS removed here -- the native handler
+	// further down in this switch (with the codeNotify refresh logic) covers it
+
 	case ID_VIEW_FOLDERS:
 	{
 		int val = GetWindowPanes() ^ 1;
@@ -4563,6 +4609,21 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 			break;
 		ResetPlayTime(drvindex);
 		ResetPlayCount(drvindex);
+		res = ListView_RedrawItems(hwndList, GetSelectedPick(), GetSelectedPick());
+		break;
+
+	// MAMEPlus port: split reset of playcount / playtime
+	case ID_CONTEXT_RESET_PLAYCOUNT:
+		if (drvindex < 0)
+			break;
+		ResetPlayCount(drvindex);
+		res = ListView_RedrawItems(hwndList, GetSelectedPick(), GetSelectedPick());
+		break;
+
+	case ID_CONTEXT_RESET_PLAYTIME:
+		if (drvindex < 0)
+			break;
+		ResetPlayTime(drvindex);
 		res = ListView_RedrawItems(hwndList, GetSelectedPick(), GetSelectedPick());
 		break;
 

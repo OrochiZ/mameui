@@ -43,7 +43,7 @@
  * This effect is a rewritten implementation of the hq2x effect made by Maxim Stepin
  */
 #if 0
-void hq2x_16_def(interp_uint16* restrict volatile dst0, interp_uint16* restrict volatile dst1, const interp_uint16* restrict src0, const interp_uint16* restrict src1, const interp_uint16* restrict src2, unsigned count, unsigned flag)
+void hq2x_16_def(interp_uint16* __restrict volatile dst0, interp_uint16* __restrict volatile dst1, const interp_uint16* __restrict src0, const interp_uint16* __restrict src1, const interp_uint16* __restrict src2, unsigned count, unsigned flag)
 {
 	/* The volatile keyword for destination pointer ensures that */
 	/* the destination memory is only written and never read. */
@@ -130,7 +130,7 @@ void hq2x_16_def(interp_uint16* restrict volatile dst0, interp_uint16* restrict 
 }
 #endif
 
-void hq2x_32_def(interp_uint32* restrict dst0, interp_uint32* restrict dst1, const interp_uint32* restrict src0, const interp_uint32* restrict src1, const interp_uint32* restrict src2, unsigned count)
+void hq2x_32_def(interp_uint32* __restrict dst0, interp_uint32* __restrict dst1, const interp_uint32* __restrict src0, const interp_uint32* __restrict src1, const interp_uint32* __restrict src2, unsigned count)
 {
 	unsigned i;
 
@@ -213,7 +213,7 @@ void hq2x_32_def(interp_uint32* restrict dst0, interp_uint32* restrict dst1, con
 }
 
 #if 0
-void hq2x_yuy2_def(interp_uint32* restrict volatile dst0, interp_uint32* restrict volatile dst1, const interp_uint32* restrict src0, const interp_uint32* restrict src1, const interp_uint32* restrict src2, unsigned count, unsigned flag)
+void hq2x_yuy2_def(interp_uint32* __restrict volatile dst0, interp_uint32* __restrict volatile dst1, const interp_uint32* __restrict src0, const interp_uint32* __restrict src1, const interp_uint32* __restrict src2, unsigned count, unsigned flag)
 {
 	unsigned i;
 

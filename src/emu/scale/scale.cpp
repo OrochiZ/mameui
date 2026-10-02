@@ -67,8 +67,6 @@ UINT32 LUT16to32[65536];
 
 static int use_mmx;
 
-static UINT8 *scale_buffer[MAX_SCALE_BANK];
-
 static int previous_depth[MAX_SCALE_BANK];
 static int previous_width[MAX_SCALE_BANK];
 static int previous_height[MAX_SCALE_BANK];
@@ -301,12 +299,6 @@ int scale_exit(void)
 	for (i = 0; i < MAX_SCALE_BANK; i++)
 	{
 		previous_depth[i] = previous_width[i] = previous_height[i] = 0;
-
-		if (scale_buffer[i])
-		{
-			global_free(scale_buffer[i]);
-			scale_buffer[i] = NULL;
-		}
 	}
 
 	return 0;

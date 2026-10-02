@@ -649,5 +649,20 @@
 #define ID_TOGGLE_TAB_TITLE             40165
 #define ID_TOGGLE_TAB_VERSUS            40166
 #define ID_TOGGLE_TAB_HISTORY           40167
+// MAMEPlus port: split reset stats and BIOS properties context items
+#define ID_CONTEXT_RESET_PLAYCOUNT      40168
+#define ID_CONTEXT_RESET_PLAYTIME       40169
+#define ID_BIOS_PROPERTIES              40170
+// MAMEPlus port: Plus view modes and extended Arrange Icons sort entries
+#define ID_VIEW_LIST_MENU               40171
+#define ID_VIEW_DETAIL                  40172
+#define ID_VIEW_GROUPED                 40173
+#define ID_VIEW_ORIENTATION             40174
+#define ID_VIEW_BYSAMPLES               40175
+#define ID_VIEW_TRACKBALL               40176
+#define ID_VIEW_BYCLONE                 40177
+#define ID_VIEW_BYSRCDRIVERS            40178
+#define ID_VIEW_BYPLAYTIME              40179
+#define ID_VIEW_BYROMS                  40180
 #define IDC_STATIC                      -1
 

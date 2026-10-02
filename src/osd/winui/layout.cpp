@@ -160,8 +160,9 @@ extern const MAMEHELPINFO g_helpInfo[] =
 extern const MAMEHELPINFO g_helpInfo[] =
 {
 	{ ID_HELP_CONTENTS,    TRUE,  TEXT(MAMEUIHELP) },
-	//{ ID_HELP_WHATS_NEWUI, TRUE,  TEXT(MAMEUIHELP"::/html/mameui_changes.txt") },
-	//{ ID_HELP_TROUBLE,     TRUE,  TEXT(MAMEUIHELP"::/html/mameui_support.htm") },
+	// MAMEPlus port: restore Troubleshooting / New Game Changes help topics
+	{ ID_HELP_WHATS_NEWUI, TRUE,  TEXT(MAMEUIHELP"::/html/mameui_changes.txt") },
+	{ ID_HELP_TROUBLE,     TRUE,  TEXT(MAMEUIHELP"::/html/mameui_support.htm") },
 	//{ ID_HELP_RELEASE,     FALSE, TEXT("windows.txt") },
 	{ ID_HELP_WHATS_NEW,   TRUE,  TEXT(MAMEUIHELP"::/docs/whatsnew.txt") },
 	{ -1 }

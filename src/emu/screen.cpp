@@ -20,6 +20,7 @@
 #include "ui/uimain.h"
 
 #include "scale/osdscale.h"
+#include "util/language.h"
 
 #include "nanosvg.h"
 #include "png.h"
@@ -1224,7 +1225,7 @@ void screen_device::free_scale_bitmap()
 
 void screen_device::convert_palette_to_32(bitmap_ind16 const &src, bitmap_rgb32 &dst, const rectangle &visarea)
 {
-	const rgb_t *const palette = m_palette->palette().entry_list_adjusted();
+	const rgb_t *const palette = m_palette->palette()->entry_list_adjusted();
 
 	for (int y = visarea.top(); y <= visarea.bottom(); y++)
 	{
@@ -1239,7 +1240,7 @@ void screen_device::convert_palette_to_32(bitmap_ind16 const &src, bitmap_rgb32 
 
 void screen_device::convert_palette_to_15(bitmap_ind16 const &src, bitmap_ind16 &dst, const rectangle &visarea)
 {
-	const rgb_t *const palette = m_palette->palette().entry_list_adjusted();
+	const rgb_t *const palette = m_palette->palette()->entry_list_adjusted();
 
 	for (int y = visarea.top(); y <= visarea.bottom(); y++)
 	{

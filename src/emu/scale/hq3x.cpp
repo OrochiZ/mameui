@@ -43,7 +43,7 @@
  */
  
 #if 0
-void hq3x_16_def(interp_uint16* restrict dst0, interp_uint16* restrict dst1, interp_uint16* restrict dst2, const interp_uint16* restrict src0, const interp_uint16* restrict src1, const interp_uint16* restrict src2, unsigned count, unsigned flag)
+void hq3x_16_def(interp_uint16* __restrict dst0, interp_uint16* __restrict dst1, interp_uint16* __restrict dst2, const interp_uint16* __restrict src0, const interp_uint16* __restrict src1, const interp_uint16* __restrict src2, unsigned count, unsigned flag)
 {
 	unsigned i;
 
@@ -127,7 +127,7 @@ void hq3x_16_def(interp_uint16* restrict dst0, interp_uint16* restrict dst1, int
 }
 #endif
 
-void hq3x_32_def(interp_uint32* restrict dst0, interp_uint32* restrict dst1, interp_uint32* restrict dst2, const interp_uint32* restrict src0, const interp_uint32* restrict src1, const interp_uint32* restrict src2, unsigned count)
+void hq3x_32_def(interp_uint32* __restrict dst0, interp_uint32* __restrict dst1, interp_uint32* __restrict dst2, const interp_uint32* __restrict src0, const interp_uint32* __restrict src1, const interp_uint32* __restrict src2, unsigned count)
 {
 	unsigned i;
 
@@ -211,7 +211,7 @@ void hq3x_32_def(interp_uint32* restrict dst0, interp_uint32* restrict dst1, int
 }
 
 #if 0
-void hq3x_yuy2_def(interp_uint32* restrict dst0, interp_uint32* restrict dst1, interp_uint32* restrict dst2, const interp_uint32* restrict src0, const interp_uint32* restrict src1, const interp_uint32* restrict src2, unsigned count, unsigned flag)
+void hq3x_yuy2_def(interp_uint32* __restrict dst0, interp_uint32* __restrict dst1, interp_uint32* __restrict dst2, const interp_uint32* __restrict src0, const interp_uint32* __restrict src1, const interp_uint32* __restrict src2, unsigned count, unsigned flag)
 {
 	unsigned i;
 

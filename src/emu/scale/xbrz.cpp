@@ -98,6 +98,14 @@ void fillBlock(xbrz_uint32* trg, int pitch, xbrz_uint32 col, int n) { fillBlock(
 #define FORCE_INLINE inline
 #endif
 
+// 0.287u no longer provides the MIN/MAX macros (MAMEPlus port fix)
+#ifndef MAX
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef MIN
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
 
 enum RotationDegree //clock-wise
 {

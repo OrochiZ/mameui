@@ -157,8 +157,9 @@ const WINUIOPTS option_entries[] =
 	{ MUIOPTION_LIST_MODE,                    "1",        core_options::option_type::BOOLEAN,                 NULL },
 	{ MUIOPTION_SPLITTERS,                    MUIDEFAULT_SPLITTERS, core_options::option_type::STRING,       NULL },
 	{ MUIOPTION_LIST_FONT,                    "-11,0,0,0,400,0,0,0,0,1,2,1,34,MS Sans Serif", core_options::option_type::STRING, NULL },
-	{ MUIOPTION_COLUMN_WIDTHS,                "185,78,84,84,64,88,74,108,60,144,84,40,40", core_options::option_type::STRING, NULL },
-	{ MUIOPTION_COLUMN_ORDER,                 "0,1,2,3,4,5,6,7,8,9,10,11,12", core_options::option_type::STRING, NULL },
+	{ MUIOPTION_COLUMN_WIDTHS,                "185,78,84,84,64,88,74,108,60,144,84,60,60", core_options::option_type::STRING, NULL },
+	// MAMEPlus port: default column order aligned with Plus159 (games, orientation, samples, directory, type, trackball, played, manufacturer, year, clone, srcdrivers, playtime; ROMS hidden at the end)
+	{ MUIOPTION_COLUMN_ORDER,                 "0,4,11,2,3,10,7,5,6,9,1,8,12", core_options::option_type::STRING, NULL },
 	{ MUIOPTION_COLUMN_SHOWN,                 "1,1,1,1,1,1,1,1,1,1,1,1,0", core_options::option_type::STRING,  NULL },
 	{ MESSUI_SL_COLUMN_WIDTHS,                "100,75,223,46,120,120", core_options::option_type::STRING, NULL },
 	{ MESSUI_SL_COLUMN_ORDER,                 "0,1,2,3,4,5", core_options::option_type::STRING, NULL }, // order of columns
