@@ -24,6 +24,7 @@
 #include "ui/inifile.h"
 #include "ui/inputopts.h"
 #include "ui/miscmenu.h"
+#include "ui/moptions.h"
 #include "ui/pluginopt.h"
 #include "ui/plusmenus.h"
 #include "ui/selgame.h"
@@ -52,6 +53,7 @@ enum : unsigned {
 	PLUS_AUTOFIRE,
 	PLUS_CUSTOM_BUTTONS,
 	PLUS_SCALE_EFFECT,
+	PLUS_COMMAND,
 	SETTINGS_DIP_SWITCHES,
 	SETTINGS_DRIVER_CONFIG,
 	BOOKKEEPING,
@@ -124,6 +126,15 @@ void menu_main::populate()
 	// MAMEPlus port: autofire / custom button menus
 	item_append(_("menu-main", "Autofire Settings"), 0, (void *)PLUS_AUTOFIRE);
 	item_append(_("menu-main", "Custom Buttons"), 0, (void *)PLUS_CUSTOM_BUTTONS);
+
+	// MAMEPlus port: command.dat section viewer (only when present)
+	{
+		// the history path is a UI option, not a machine option --
+		// machine().options() has no such entry and value() returns null
+		emu_file cmdfile(ui().options().history_path(), OPEN_FLAG_READ);
+		if (!cmdfile.open("command.dat"))
+			item_append(_("menu-main", "Command List"), 0, (void *)PLUS_COMMAND);
+	}
 
 	if (ui().machine_info().has_dips())
 		item_append(_("menu-main", "DIP Switches"), 0, (void *)SETTINGS_DIP_SWITCHES);
@@ -253,6 +264,10 @@ bool menu_main::handle(event const *ev)
 
 		case PLUS_SCALE_EFFECT:
 			menu::stack_push<menu_scale_effect>(ui(), container());
+			break;
+
+		case PLUS_COMMAND:
+			menu::stack_push<menu_command_list>(ui(), container());
 			break;
 
 		case SETTINGS_DIP_SWITCHES:

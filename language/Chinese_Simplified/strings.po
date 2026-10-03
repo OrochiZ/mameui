@@ -6539,3 +6539,63 @@ msgstr ""
 #~ msgctxt "input-name"
 #~ msgid "UI Toggle"
 #~ msgstr "菜单 切换"
+
+msgctxt "menu-main"
+msgid "Autofire Settings"
+msgstr "自动连发设置"
+
+msgctxt "menu-main"
+msgid "Custom Buttons"
+msgstr "自定义组合按键"
+
+msgctxt "menu-main"
+msgid "Image Enhancement"
+msgstr "图像增强"
+
+msgctxt "menu-main"
+msgid "Command List"
+msgstr "出招表"
+
+msgctxt "menu-main"
+msgid "No command data for this game"
+msgstr "没有该游戏的出招表数据"
+
+msgctxt "autofire"
+msgid "Autofire Settings"
+msgstr "自动连发设置"
+
+msgctxt "autofire"
+msgid "Custom Buttons"
+msgstr "自定义组合按键"
+
+msgctxt "autofire"
+msgid "Image Enhancement"
+msgstr "图像增强"
+
+msgctxt "autofire"
+msgid "Command List"
+msgstr "出招表"
+
+msgctxt "autofire"
+msgid "On"
+msgstr "开"
+
+msgctxt "autofire"
+msgid "Off"
+msgstr "关"
+
+msgctxt "autofire"
+msgid "Toggle"
+msgstr "切换"
+
+msgctxt "autofire"
+msgid "Current"
+msgstr "当前"
+
+msgctxt "autofire"
+msgid "Autofire Delay"
+msgstr "连发延迟"
+
+msgctxt "autofire"
+msgid "Press 1-9/0 to toggle buttons"
+msgstr "按数字键 1-9/0 加入/移出按钮"

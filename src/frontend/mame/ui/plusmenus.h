@@ -55,6 +55,26 @@ protected:
 	virtual bool handle(event const *ev) override;
 };
 
+
+class menu_command_list : public menu
+{
+public:
+	menu_command_list(mame_ui_manager &mui, render_container &container);
+	virtual ~menu_command_list();
+
+protected:
+	virtual void populate() override;
+	virtual bool handle(event const *ev) override;
+
+private:
+	struct section
+	{
+		std::string title;
+		std::string content;
+	};
+	std::vector<section> m_sections;
+};
+
 } // namespace ui
 
 #endif // MAME_FRONTEND_MAME_UI_PLUSMENUS_H

@@ -25,6 +25,10 @@
 // the normalized name itself when there is no mapping
 std::string winui_plus_lang_shortname(const std::string &language);
 
+// resolve a language option value to the official long directory name
+// (the low-priority fallback location for dictionaries)
+std::string winui_plus_lang_longname(const std::string &language);
+
 // command IDs for the runtime-inserted Options > Language menu
 #define ID_LANGUAGE_MENU   41000
 #define ID_LANGUAGE_FIRST  41001

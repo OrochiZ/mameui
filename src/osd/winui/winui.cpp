@@ -251,25 +251,20 @@ static void load_translation(emu_options &m_options)
 {
 	util::unload_translation();
 
-	std::string name = m_options.language();
-	// MAMEPlus port: the core's "auto" language resolution is not handled here,
-	// which used to lock the internal UI to English -- default to Simplified Chinese
-	if (name.empty() || name == "auto")
-		name = "Chinese_Simplified";
-
-	strreplace(name, " ", "_");
-	strreplace(name, "(", "");
-	strreplace(name, ")", "");
+	// MAMEPlus port: the option value may be either the MAMEPlus short
+	// directory name (zh_CN) or the official long name
+	// (Chinese_Simplified); resolve both up front
+	std::string const shortname = winui_plus_lang_shortname(m_options.language());
+	std::string const longname = winui_plus_lang_longname(m_options.language());
 
 	// MESSUI: See if language file exists. If not, try English, see if that exists. If not, use inbuilt default.
 	emu_file file(m_options.language_path(), OPEN_FLAG_READ);
-	if (file.open(name + PATH_SEPARATOR "strings.mo"))
+	if (file.open(longname + PATH_SEPARATOR "strings.mo") && file.open(shortname + PATH_SEPARATOR "strings.mo"))
 	{
-		osd_printf_verbose("Error opening translation file %s\n", name);
-		name = "English";
-		if (file.open(name + PATH_SEPARATOR "strings.mo"))
+		osd_printf_verbose("Error opening translation file %s\n", longname.c_str());
+		if (file.open("English" PATH_SEPARATOR "strings.mo"))
 		{
-			osd_printf_verbose("Error opening translation file %s\n", name);
+			osd_printf_verbose("Error opening translation file English\n");
 			return;
 		}
 	}
@@ -280,8 +275,10 @@ static void load_translation(emu_options &m_options)
 	// MAMEPlus port: layer the legacy .mmo dictionaries on top of the
 	// official gettext dictionary; strings present in both keep the
 	// legacy translation. mame.mmo holds UI strings (plain), lst.mmo
-	// holds game titles under the "lst" context.
-	std::string const shortname = winui_plus_lang_shortname(m_options.language());
+	// holds game titles under the "lst" context. The Plus route wins:
+	// the legacy "lang" path with short directory names (lang/zh_CN)
+	// is where old MAMEPlus looked, so it is searched first; the long
+	// name directory (language/Chinese_Simplified) is the fallback.
 	static const struct
 	{
 		const char *base;
@@ -292,10 +289,12 @@ static void load_translation(emu_options &m_options)
 		{ "mame", nullptr },
 		{ "lst",  "lst" },
 	};
-	emu_file mmofile(m_options.language_path(), OPEN_FLAG_READ);
+	std::string const mmopath = std::string("lang;") + m_options.language_path();
+	emu_file mmofile(mmopath, OPEN_FLAG_READ);
 	for (const auto &entry : mmo_files)
 	{
-		if (mmofile.open(shortname + PATH_SEPARATOR + std::string(entry.base) + ".mmo"))
+		if (mmofile.open(shortname + PATH_SEPARATOR + std::string(entry.base) + ".mmo")
+				&& mmofile.open(longname + PATH_SEPARATOR + std::string(entry.base) + ".mmo"))
 			continue;
 		osd_printf_verbose("Loading legacy translation file %s\n", mmofile.fullpath());
 		util::merge_translation(mmofile, entry.context);

@@ -14,11 +14,15 @@
 #include "emuopts.h"
 #include "input.h"
 #include "ioport.h"
+#include "moptions.h"
 #include "screen.h"
+#include "textbox.h"
 
 #include "scale/osdscale.h"
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 
 namespace ui {
@@ -46,7 +50,8 @@ void menu_autofire::populate()
 {
 	int players = 0;
 
-	// iterate over the input ports and add autofire toggle items
+	// collect the matching fields, sorted player-first (like MAMEPlus)
+	std::vector<ioport_field *> fields;
 	for (auto &port : machine().ioport().ports())
 	{
 		for (ioport_field &field : port.second->fields())
@@ -59,17 +64,28 @@ void menu_autofire::populate()
 			{
 				if (players < field.player() + 1)
 					players = field.player() + 1;
-
-				char const *subtext;
-				switch (field.live().autofire)
-				{
-					case AUTOFIRE_ON:       subtext = _("autofire", "On");     break;
-					case AUTOFIRE_TOGGLE:   subtext = _("autofire", "Toggle"); break;
-					default:                subtext = _("autofire", "Off");    break;
-				}
-				item_append(name, subtext, FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW, (void *)&field.live().autofire);
+				fields.push_back(&field);
 			}
 		}
+	}
+	std::sort(fields.begin(), fields.end(),
+			[] (ioport_field const *a, ioport_field const *b)
+			{
+				if (a->player() != b->player())
+					return a->player() < b->player();
+				return a->type() < b->type();
+			});
+
+	for (ioport_field *field : fields)
+	{
+		char const *subtext;
+		switch (field->live().autofire)
+		{
+			case AUTOFIRE_ON:       subtext = _("autofire", "On");     break;
+			case AUTOFIRE_TOGGLE:   subtext = _("autofire", "Toggle"); break;
+			default:                subtext = _("autofire", "Off");    break;
+		}
+		item_append(std::string(field->name()), subtext, FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW, (void *)&field->live().autofire);
 	}
 
 	// add per-player autofire delay items
@@ -175,37 +191,47 @@ menu_custom_button::~menu_custom_button()
 
 void menu_custom_button::populate()
 {
-	// loop over the input ports and add the custom button items
+	// collect the matching fields, sorted player-first (like MAMEPlus)
+	std::vector<ioport_field *> fields;
 	for (auto &port : machine().ioport().ports())
 	{
 		for (ioport_field &field : port.second->fields())
 		{
-			int const player = field.player();
 			int const type = field.type();
 
 			if ((type >= IPT_CUSTOM1) && (type < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS))
-			{
-				int const which = type - IPT_CUSTOM1;
-				std::string subtext;
-				int n = 1;
-
-				// unpack the custom button combination
-				for (int i = 0; i < MAX_NORMAL_BUTTONS; i++, n <<= 1)
-					if (machine().ioport().get_custom_button(player, which) & n)
-					{
-						if (!subtext.empty())
-							subtext.append("+");
-						subtext.append(1, char('A' + i));
-					}
-
-				// the ref points at this custom button field
-				item_append(field.name(), subtext, FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW, &field);
-			}
+				fields.push_back(&field);
 		}
 	}
+	std::sort(fields.begin(), fields.end(),
+			[] (ioport_field const *a, ioport_field const *b)
+			{
+				if (a->player() != b->player())
+					return a->player() < b->player();
+				return a->type() < b->type();
+			});
 
-	item_append(menu_item_type::SEPARATOR, 0);
-	item_append(_("autofire", "Select a combination, then press 1-9/0 to toggle buttons"), "", FLAG_DISABLE, nullptr);
+	for (ioport_field *field : fields)
+	{
+		int const which = field->type() - IPT_CUSTOM1;
+		std::string subtext;
+		int n = 1;
+
+		// unpack the custom button combination
+		for (int i = 0; i < MAX_NORMAL_BUTTONS; i++, n <<= 1)
+			if (machine().ioport().get_custom_button(field->player(), which) & n)
+			{
+				if (!subtext.empty())
+					subtext.append("+");
+				subtext.append(1, char('A' + i));
+			}
+
+		// the ref points at this custom button field
+		item_append(std::string(field->name()), subtext, FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW, field);
+	}
+
+	// MAMEPlus port: no instruction line here (Plus had it commented
+	// out) -- a long disabled item would widen the whole menu
 }
 
 
@@ -299,13 +325,13 @@ void menu_scale_effect::populate()
 {
 	char const *const current = machine().options().scale_effect();
 
+	// MAMEPlus port: plain list, cursor starts on the current effect and
+	// Enter applies it -- no arrows and no "Current" marker
 	for (int i = 0; i < scale_count(); i++)
 	{
-		bool const is_current = !strcmp(current, scale_name(i));
-		item_append(_("autofire", scale_desc(i)),
-					is_current ? _("autofire", "Current") : "",
-					FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW,
-					(void *)(uintptr_t(i)));
+		if (!strcmp(current, scale_name(i)))
+			set_selected_index(i);
+		item_append(_("autofire", scale_desc(i)), "", 0, (void *)(uintptr_t(i)));
 	}
 }
 
@@ -316,26 +342,135 @@ void menu_scale_effect::populate()
 
 bool menu_scale_effect::handle(event const *ev)
 {
-	if (ev && ev->itemref)
+	if (ev && ev->itemref && (ev->iptkey == IPT_UI_SELECT))
 	{
 		int const selected = int(uintptr_t(ev->itemref));
 
-		if ((ev->iptkey == IPT_UI_SELECT) || (ev->iptkey == IPT_UI_LEFT) || (ev->iptkey == IPT_UI_RIGHT))
+		machine().options().set_value(OPTION_SCALE_EFFECT, scale_name(selected), OPTION_PRIORITY_CMDLINE);
+
+		// reinitialize every screen with the new effect
+		for (screen_device &screen : screen_device_enumerator(machine().root_device()))
+			screen.reinit_scale_effect();
+
+		reset(reset_options::REMEMBER_REF);
+		return true;
+	}
+
+	return false;
+}
+
+
+/***************************************************************************
+    COMMAND LIST MENU (Plus-style command.dat sections)
+***************************************************************************/
+
+menu_command_list::menu_command_list(mame_ui_manager &mui, render_container &container)
+	: menu(mui, container)
+{
+	set_heading(_("menu-main", "Command List"));
+
+	// locate command.dat in the history path (a UI option, not a
+	// machine option -- machine().options() has no such entry)
+	emu_file file(ui().options().history_path(), OPEN_FLAG_READ);
+	if (file.open("command.dat"))
+		return;
+
+	std::string buffer;
+	char chunk[4096];
+	u32 got;
+	while ((got = file.read(chunk, sizeof(chunk))) > 0)
+		buffer.append(chunk, got);
+	file.close();
+
+	// strip a UTF-8 byte order mark if present
+	if (buffer.compare(0, 3, "\xef\xbb\xbf") == 0)
+		buffer.erase(0, 3);
+
+	// file format: "#comment" lines, "$info=set1,set2" declaring the sets
+	// the following sections belong to, then any number of "$cmd" ...
+	// "$end" sections whose first line is the section title
+	std::string const setname(machine().system().name);
+	std::string parent(machine().system().parent);
+	if (parent == "0")
+		parent.clear();
+
+	bool wanted = false;
+	bool in_section = false;
+	bool need_title = false;
+	section cur;
+
+	size_t pos = 0;
+	while (buffer.length() > pos)
+	{
+		size_t const eol = buffer.find('\n', pos);
+		std::string line = buffer.substr(pos, (std::string::npos == eol) ? std::string::npos : eol - pos);
+		pos = (std::string::npos == eol) ? buffer.length() : eol + 1;
+		while (!line.empty() && ((line.back() == '\r') || (line.back() == ' ')))
+			line.pop_back();
+
+		if (line.compare(0, 6, "$info=") == 0)
 		{
-			// switch to the selected effect (left/right move one entry)
-			int new_effect = selected;
-			if (ev->iptkey == IPT_UI_LEFT)
-				new_effect = (selected + scale_count() - 1) % scale_count();
-			else if (ev->iptkey == IPT_UI_RIGHT)
-				new_effect = (selected + 1) % scale_count();
+			// the sets listed after the marker own the following sections
+			std::string const sets = line.substr(6);
+			wanted = (sets.find(setname) != std::string::npos) || (!parent.empty() && (sets.find(parent) != std::string::npos));
+		}
+		else if (line == "$cmd")
+		{
+			in_section = true;
+			need_title = true;
+			cur.title.clear();
+			cur.content.clear();
+		}
+		else if ((line.compare(0, 4, "$end") == 0) && in_section)
+		{
+			if (wanted && !cur.title.empty())
+				m_sections.push_back(std::move(cur));
+			cur = section();
+			in_section = false;
+		}
+		else if (in_section)
+		{
+			if (need_title && !line.empty())
+			{
+				cur.title = line;
+				need_title = false;
+			}
+			cur.content.append(line).append(1, '\n');
+		}
+	}
+}
 
-			machine().options().set_value(OPTION_SCALE_EFFECT, scale_name(new_effect), OPTION_PRIORITY_CMDLINE);
 
-			// reinitialize every screen with the new effect
-			for (screen_device &screen : screen_device_enumerator(machine().root_device()))
-				screen.reinit_scale_effect();
+menu_command_list::~menu_command_list()
+{
+}
 
-			reset(reset_options::REMEMBER_REF);
+
+void menu_command_list::populate()
+{
+	if (m_sections.empty())
+	{
+		item_append(_("menu-main", "No command data for this game"), "", FLAG_DISABLE, nullptr);
+		return;
+	}
+
+	int index = 0;
+	for (section const &sec : m_sections)
+		item_append(sec.title, "", 0, (void *)(uintptr_t(index++)));
+}
+
+
+bool menu_command_list::handle(event const *ev)
+{
+	if (ev && ev->itemref && (ev->iptkey == IPT_UI_SELECT) && !m_sections.empty())
+	{
+		int const selected = int(uintptr_t(ev->itemref));
+		if ((selected >= 0) && (m_sections.size() > (size_t)selected))
+		{
+			// pass a copy: the menu may be revisited
+			menu::stack_push<menu_fixed_textbox>(ui(), container(),
+					std::string(_("menu-main", "Command List")) + " - " + m_sections[selected].title,
+					std::string(m_sections[selected].content));
 			return true;
 		}
 	}

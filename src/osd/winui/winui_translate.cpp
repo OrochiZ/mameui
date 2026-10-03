@@ -31,6 +31,7 @@
 #include "util/corestr.h"
 #include "util/ioprocs.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -165,6 +166,45 @@ std::string winui_plus_lang_shortname(const std::string &language)
 
 
 //============================================================
+//  winui_plus_lang_longname - map the MAMEPlus short directory
+//  name back to the official long language directory name
+//  (the low-priority fallback location)
+//============================================================
+
+std::string winui_plus_lang_longname(const std::string &language)
+{
+	std::string name = language;
+	if (name.empty() || name == "auto")
+		name = "Chinese_Simplified";
+	strreplace(name, " ", "_");
+	strreplace(name, "(", "");
+	strreplace(name, ")", "");
+
+	static const std::pair<const char *, const char *> table[] =
+	{
+		{ "zh_CN", "Chinese_Simplified" },
+		{ "zh_TW", "Chinese_Traditional" },
+		{ "ja_JP", "Japanese" },
+		{ "ko_KR", "Korean" },
+		{ "fr_FR", "French" },
+		{ "de_DE", "German" },
+		{ "it_IT", "Italian" },
+		{ "es_ES", "Spanish" },
+		{ "ca_ES", "Catalan" },
+		{ "va_ES", "Valencian" },
+		{ "pl_PL", "Polish" },
+		{ "pt_PT", "Portuguese_Portugal" },
+		{ "pt_BR", "Portuguese_Brazil" },
+		{ "hu_HU", "Hungarian" },
+	};
+	for (auto const &entry : table)
+		if (!core_stricmp(name.c_str(), entry.first))
+			return entry.second;
+	return name;
+}
+
+
+//============================================================
 //  load_mmo_file - parse a legacy MAMEPlus .mmo dictionary and
 //  merge its wide-string entries (the winui side of the file)
 //  into the GUI dictionary under the given context, overriding
@@ -262,22 +302,18 @@ void winui_init_translation()
 
 	std::string const lang = MameUIGlobal().value(OPTION_LANGUAGE);
 	std::string const name = winui_plus_lang_shortname(lang);
+	std::string const longname = winui_plus_lang_longname(lang);
 
-	// the long official directory name (Chinese_Simplified etc.) holds
-	// the gettext .mo dictionaries, the legacy short name (zh_CN etc.)
-	// holds the MAMEPlus .mmo dictionaries
-	std::string longname = lang;
-	if (longname.empty() || longname == "auto")
-		longname = "Chinese_Simplified";
-	strreplace(longname, " ", "_");
-	strreplace(longname, "(", "");
-	strreplace(longname, ")", "");
-
-	emu_file file(MameUIGlobal().value(OPTION_LANGUAGEPATH), OPEN_FLAG_READ);
+	// MAMEPlus route takes priority: the legacy "lang" path with short
+	// directory names (lang/zh_CN) is where old MAMEPlus looked, so it
+	// is searched first; the official long-name directory
+	// (language/Chinese_Simplified) is the low-priority fallback
+	std::string const searchpath = std::string("lang;") + MameUIGlobal().value(OPTION_LANGUAGEPATH);
+	emu_file file(searchpath, OPEN_FLAG_READ);
 
 	// dedicated GUI dictionary (the official strings.mo stays untouched);
-	// try the long directory name first, then the legacy short name
-	if (file.open(longname + PATH_SEPARATOR "winui.mo") && file.open(name + PATH_SEPARATOR "winui.mo"))
+	// try the legacy short directory first, then the long one
+	if (file.open(name + PATH_SEPARATOR "winui.mo") && file.open(longname + PATH_SEPARATOR "winui.mo"))
 	{
 		osd_printf_verbose("No GUI translation file for language %s\n", name.c_str());
 	}
@@ -308,7 +344,10 @@ void winui_init_translation()
 	};
 	for (const auto &entry : mmo_files)
 	{
-		if (file.open(name + PATH_SEPARATOR + std::string(entry.base) + ".mmo"))
+		// legacy short-name directory (lang/zh_CN) first, long-name
+		// directory (language/Chinese_Simplified) as the fallback
+		if (file.open(name + PATH_SEPARATOR + std::string(entry.base) + ".mmo")
+				&& file.open(longname + PATH_SEPARATOR + std::string(entry.base) + ".mmo"))
 			continue;
 		osd_printf_verbose("Loading legacy translation file %s\n", file.fullpath());
 		load_mmo_file(file, entry.context);
@@ -562,13 +601,40 @@ bool winui_insert_language_menu(HMENU hMenuBar)
 		}
 	}
 
-	// scan the language directory for usable dictionaries
+	// scan for usable languages: the legacy Plus directories under
+	// "lang" (short names) come first, the official long-name
+	// directories under the language path are the fallback; stored
+	// values are always MAMEPlus short names so old MAMEPlus builds
+	// sharing the ini keep working
 	s_menu_langs.clear();
-	s_menu_langs.push_back(std::string()); // first entry: the default
-	std::string const langpath = MameUIGlobal().value(OPTION_LANGUAGEPATH);
+	s_menu_langs.push_back("zh_CN"); // first entry: the default (Simplified Chinese)
+	auto push_lang = [] (std::string &&dir)
+	{
+		std::string const shortname = winui_plus_lang_shortname(dir);
+		// the first entry already covers Simplified Chinese
+		if (!strcmp(shortname.c_str(), "zh_CN"))
+			return;
+		if (std::find(s_menu_langs.begin(), s_menu_langs.end(), shortname) == s_menu_langs.end())
+			s_menu_langs.push_back(std::move(shortname));
+	};
+
 	WIN32_FIND_DATAA fd;
-	HANDLE const find = FindFirstFileA((langpath + "\\*").c_str(), &fd);
-	if (find != INVALID_HANDLE_VALUE)
+	HANDLE const find_lang = FindFirstFileA("lang\\*", &fd);
+	if (find_lang != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || !strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, ".."))
+				continue;
+			push_lang(fd.cFileName);
+		}
+		while (FindNextFileA(find_lang, &fd));
+		FindClose(find_lang);
+	}
+
+	std::string const langpath = MameUIGlobal().value(OPTION_LANGUAGEPATH);
+	HANDLE const find_official = FindFirstFileA((langpath + "\\*").c_str(), &fd);
+	if (find_official != INVALID_HANDLE_VALUE)
 	{
 		do
 		{
@@ -578,37 +644,29 @@ bool winui_insert_language_menu(HMENU hMenuBar)
 			if ((GetFileAttributesA((dir + "\\winui.mo").c_str()) == INVALID_FILE_ATTRIBUTES)
 					&& (GetFileAttributesA((dir + "\\strings.mo").c_str()) == INVALID_FILE_ATTRIBUTES))
 				continue;
-			// the default already covers Simplified Chinese; don't list it twice
-			if (!strcmp(fd.cFileName, "Chinese_Simplified"))
-				continue;
-			s_menu_langs.push_back(fd.cFileName);
+			push_lang(fd.cFileName);
 		}
-		while (FindNextFileA(find, &fd));
-		FindClose(find);
+		while (FindNextFileA(find_official, &fd));
+		FindClose(find_official);
 	}
 
-	// current selection for the radio check
-	std::string current = MameUIGlobal().value(OPTION_LANGUAGE);
-	strreplace(current, " ", "_");
-	strreplace(current, "(", "");
-	strreplace(current, ")", "");
+	// current selection normalized to the short name for the radio check
+	std::string const current = winui_plus_lang_shortname(MameUIGlobal().value(OPTION_LANGUAGE));
 
 	HMENU const popup = CreatePopupMenu();
 	for (size_t i = 0; s_menu_langs.size() > i; i++)
 	{
 		std::string const &lang = s_menu_langs[i];
-		std::wstring label = (lang.empty()
+		std::wstring label = ((0 == i)
 				? L"Default (Simplified Chinese)"
-				: std::wstring(lang.begin(), lang.end())); // ASCII directory names
+				: std::wstring(lang.begin(), lang.end())); // ASCII short names
 		MENUITEMINFOW mi;
 		ZeroMemory(&mi, sizeof(mi));
 		mi.cbSize     = sizeof(mi);
 		mi.fMask      = MIIM_ID | MIIM_STRING | MIIM_STATE;
 		mi.wID        = (UINT)(ID_LANGUAGE_FIRST + i);
 		mi.dwTypeData = &label[0];
-		mi.fState     = (((lang.empty() || !strcmp(lang.c_str(), "Chinese_Simplified"))
-							? (current.empty() || current == "Chinese_Simplified")
-							: (current == lang)) ? MFS_CHECKED : MFS_ENABLED);
+		mi.fState     = (((0 == i) ? (current == "zh_CN") : (current == lang)) ? MFS_CHECKED : MFS_ENABLED);
 		InsertMenuItemW(popup, (UINT)i, TRUE, &mi);
 	}
 
