@@ -66,6 +66,12 @@ function datfile.open(file, vertag, fixupcb)
 	end
 
 	if not dbver then
+		-- a previous run may have committed these tables but crashed
+		-- before the version row was written; drop the leftovers so
+		-- the data can be imported cleanly
+		db.exec(string.format([[DROP INDEX IF EXISTS "typeval_%s";]], tablename))
+		db.exec(string.format([[DROP TABLE IF EXISTS "%s_idx";]], tablename))
+		db.exec(string.format([[DROP TABLE IF EXISTS "%s";]], tablename))
 		db.exec(
 			string.format(
 				[[CREATE TABLE "%s_idx" (

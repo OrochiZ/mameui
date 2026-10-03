@@ -243,6 +243,10 @@ static void SaveGameListToFile(char *szFile);
     External variables
  ***************************************************************************/
 
+// MAMEPlus port: scratch buffer keeping the last status-bar title alive
+// while it passes through ModifyThe()
+static std::string s_status_title;
+
 static void load_translation(emu_options &m_options)
 {
 	util::unload_translation();
@@ -272,6 +276,30 @@ static void load_translation(emu_options &m_options)
 
 	osd_printf_verbose("Loading translation file %s\n", file.fullpath());
 	util::load_translation(file);
+
+	// MAMEPlus port: layer the legacy .mmo dictionaries on top of the
+	// official gettext dictionary; strings present in both keep the
+	// legacy translation. mame.mmo holds UI strings (plain), lst.mmo
+	// holds game titles under the "lst" context.
+	std::string const shortname = winui_plus_lang_shortname(m_options.language());
+	static const struct
+	{
+		const char *base;
+		const char *context;
+	}
+	mmo_files[] =
+	{
+		{ "mame", nullptr },
+		{ "lst",  "lst" },
+	};
+	emu_file mmofile(m_options.language_path(), OPEN_FLAG_READ);
+	for (const auto &entry : mmo_files)
+	{
+		if (mmofile.open(shortname + PATH_SEPARATOR + std::string(entry.base) + ".mmo"))
+			continue;
+		osd_printf_verbose("Loading legacy translation file %s\n", mmofile.fullpath());
+		util::merge_translation(mmofile, entry.context);
+	}
 }
 /***************************************************************************
     Internal structures
@@ -1628,6 +1656,7 @@ static BOOL Win32UI_init(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 	}
 
 	// MAMEPlus port: translate the attached main menu
+	winui_insert_language_menu(GetMenu(hMain));
 	winui_translate_menu(GetMenu(hMain));
 
 #ifdef DIRWATCH
@@ -2395,7 +2424,10 @@ static BOOL FolderCheck()
 	ProgressBarHide();
 	const char* pDescription;
 	if (Picker_GetSelectedItem(hwndList) >= 0)
-		pDescription = ModifyThe(driver_list::driver(Picker_GetSelectedItem(hwndList)).type.fullname());
+	{
+		s_status_title = winui_translate_utf8(driver_list::driver(Picker_GetSelectedItem(hwndList)).type.fullname(), "lst");
+		pDescription = ModifyThe(s_status_title.c_str());
+	}
 	else pDescription = "No Selection";
 	SetStatusBarText(0, pDescription);
 	UpdateStatusBar();
@@ -2475,7 +2507,10 @@ static BOOL OnIdle(HWND hWnd)
 	const char *pDescription;
 	int drvindex = Picker_GetSelectedItem(hwndList);
 	if (drvindex >= 0)
-		pDescription = ModifyThe(driver_list::driver(drvindex).type.fullname());
+	{
+		s_status_title = winui_translate_utf8(driver_list::driver(drvindex).type.fullname(), "lst");
+		pDescription = ModifyThe(s_status_title.c_str());
+	}
 	else
 		pDescription = "No Selection";
 	SetStatusBarText(0, pDescription);
@@ -2989,13 +3024,58 @@ static void DisableSelection()
 }
 
 
+// MAMEPlus port: apply a language change without restarting. The menu
+// bar is rebuilt from the resource so items rewritten by the previous
+// translation return to their English source text before the new
+// dictionary is applied.
+void winui_apply_language(const std::string &lang)
+{
+	emu_set_value(MameUIGlobal(), OPTION_LANGUAGE, lang);
+	save_options(MameUIGlobal(), OPTIONS_GLOBAL, GLOBAL_OPTIONS);
+
+	// internal UI dictionary: official strings.mo + legacy .mmo layers
+	load_translation(MameUIGlobal());
+
+	HMENU const old_menu = GetMenu(hMain);
+	SetMenu(hMain, NULL);
+	if (old_menu)
+		DestroyMenu(old_menu);
+	HMENU const new_menu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_UI_MENU));
+	SetMenu(hMain, new_menu);
+
+	winui_reload_translation();
+	winui_insert_language_menu(new_menu);
+	winui_translate_menu(new_menu);
+	// the bar painted the resource text at SetMenu time; force a repaint
+	// now that translations replaced it
+	DrawMenuBar(hMain);
+
+	// refresh the check marks (mirrors SwitchFullScreenMode)
+	CheckMenuItem(new_menu, ID_VIEW_FOLDERS, BIT(GetWindowPanes(), 0) ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(new_menu, ID_VIEW_TOOLBARS, GetShowToolBar() ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(new_menu, ID_VIEW_STATUS, GetShowStatusBar() ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(new_menu, ID_VIEW_PAGETAB, GetShowTabCtrl() ? MF_CHECKED : MF_UNCHECKED);
+
+	// restore the Play entry and status bar for the current selection
+	if (have_selection)
+	{
+		int const nGame = Picker_GetSelectedItem(GetDlgItem(hMain, IDC_LIST));
+		if (nGame >= 0)
+			EnableSelection(nGame);
+	}
+	else
+		DisableSelection();
+}
+
+
 static void EnableSelection(int nGame)
 {
 	printf("EnableSelection: A = %d = %s\n",nGame,driver_list::driver(nGame).name);fflush(stdout);
 	BOOL has_software = MyFillSoftwareList(nGame, false); // messui.cpp
 	//printf("EnableSelection: B\n");fflush(stdout);
 
-	TCHAR* t_description = ui_wstring_from_utf8(ConvertAmpersandString(ModifyThe(driver_list::driver(nGame).type.fullname())));
+	s_status_title = winui_translate_utf8(driver_list::driver(nGame).type.fullname(), "lst");
+	TCHAR* t_description = ui_wstring_from_utf8(ConvertAmpersandString(ModifyThe(s_status_title.c_str())));
 	if( !t_description )
 		return;
 
@@ -3013,7 +3093,7 @@ static void EnableSelection(int nGame)
 
 	//printf("EnableSelection: D\n");fflush(stdout);
 	const char * pText;
-	pText = ModifyThe(driver_list::driver(nGame).type.fullname());
+	pText = ModifyThe(s_status_title.c_str());
 	SetStatusBarText(0, pText);
 	/* Add this game's status to the status bar */
 	pText = GameInfoStatus(nGame, false);
@@ -3874,6 +3954,10 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 		}
 		return true;
 	}
+
+	// MAMEPlus port: Options > Language menu
+	if (winui_handle_language_command(id))
+		return true;
 
 	switch (id)
 	{
@@ -4782,12 +4866,15 @@ static const TCHAR *GamePicker_GetItemString(HWND hwndPicker, int nItem, int nCo
 	const TCHAR *s = NULL;
 	const char* utf8_s = NULL;
 	char playtime_buf[256];
+	std::string title_utf8;
+	std::string clone_utf8;
 
 	switch(nColumn)
 	{
 		case COLUMN_GAMES:
-			/* Driver description */
-			utf8_s = ModifyThe(driver_list::driver(nItem).type.fullname());
+			/* Driver description (translated from legacy lst.mmo) */
+			title_utf8 = winui_translate_utf8(driver_list::driver(nItem).type.fullname(), "lst");
+			utf8_s = ModifyThe(title_utf8.c_str());
 			break;
 
 		case COLUMN_ORIENTATION:
@@ -4858,7 +4945,16 @@ static const TCHAR *GamePicker_GetItemString(HWND hwndPicker, int nItem, int nCo
 			break;
 
 		case COLUMN_CLONE:
-			utf8_s = GetCloneParentName(nItem);
+			{
+				int const nParentIndex = DriverIsClone(nItem) ? GetParentIndex(&driver_list::driver(nItem)) : -1;
+				if (nParentIndex >= 0)
+				{
+					clone_utf8 = winui_translate_utf8(driver_list::driver(nParentIndex).type.fullname(), "lst");
+					utf8_s = ModifyThe(clone_utf8.c_str());
+				}
+				else
+					utf8_s = "";
+			}
 			break;
 	}
 
@@ -6828,6 +6924,7 @@ static void SwitchFullScreenMode()
 
 		// Restore the menu
 		SetMenu(hMain, LoadMenu(hInst,MAKEINTRESOURCE(IDR_UI_MENU)));
+		winui_insert_language_menu(GetMenu(hMain)); // MAMEPlus port
 		winui_translate_menu(GetMenu(hMain)); // MAMEPlus port
 
 		// Refresh the checkmarks

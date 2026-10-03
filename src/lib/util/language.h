@@ -31,6 +31,12 @@ namespace util {
 void unload_translation();
 void load_translation(random_read &file);
 
+// parse a translation file (.mo, or a legacy MAMEPlus .mmo) and merge its
+// entries into the existing dictionary without clearing it (later files
+// override earlier ones); when a context is given, entries are stored
+// under that gettext context so they cannot collide with plain strings
+void merge_translation(random_read &file, char const *context = nullptr);
+
 char const *lang_translate(char const *message);
 std::string_view lang_translate(std::string_view message);
 

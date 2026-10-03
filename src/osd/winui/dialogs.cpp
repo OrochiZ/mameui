@@ -455,11 +455,7 @@ INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 				std::string const lang = s_lang_list[(size_t)nCurSelection];
 				std::string const current = MameUIGlobal().value(OPTION_LANGUAGE);
 				if (lang != current)
-				{
-					emu_set_value(MameUIGlobal(), OPTION_LANGUAGE, lang);
-					save_options(MameUIGlobal(), OPTIONS_GLOBAL, GLOBAL_OPTIONS);
-					winui_reload_translation();
-				}
+					winui_apply_language(lang);
 			}
 
 			nCurSelection = ComboBox_GetCurSel(GetDlgItem(hDlg,IDC_SNAPNAME));

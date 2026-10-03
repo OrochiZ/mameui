@@ -4130,7 +4130,7 @@ void menu_select_launch::general_info(ui_system_info const *system, game_driver 
 	str << "#j2\n";
 
 	if (system)
-		str << system->description;
+		str << _("lst", system->description); // MAMEPlus port: legacy game title translation
 	else
 		str << driver.type.fullname();
 	str << "\t\n\n";

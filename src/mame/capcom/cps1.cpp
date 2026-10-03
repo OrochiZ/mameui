@@ -12812,7 +12812,7 @@ ROM_END
 ROM_START( wofff )
 	ROM_REGION( CODE_SIZE, "maincpu", 0 )      /* 68000 code */
 	ROM_LOAD( "wofj.68k", 0x000000, 0x100000, CRC(00000000) )
-	ROM_LOAD( "Frog.bin", 0x100000, 0x80000,  CRC(00000000) )
+	ROM_LOAD( "frog.bin", 0x100000, 0x80000,  CRC(00000000) )
 
 	ROM_REGION( 0x600000, "gfx", 0 )
 	ROM_LOAD64_WORD( "tk2_01.3a",  0x000000, 0x80000, CRC(0d9cb9bf) SHA1(cc7140e9a01a14b252cb1090bcea32b0de461928) )    // == tk2-1m.3a

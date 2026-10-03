@@ -356,7 +356,9 @@ void menu_select_game::populate()
 			if ((old_item_selected == -1) && (elem.driver->name == reselect_last::driver()))
 				old_item_selected = curitem;
 
-			item_append(elem.description, elem.is_clone ? FLAG_INVERT : 0, (void *)&elem);
+			// MAMEPlus port: translate game titles from the legacy lst.mmo
+			// dictionary ("lst" context); search still matches English text
+			item_append(std::string(_("lst", elem.description)), elem.is_clone ? FLAG_INVERT : 0, (void *)&elem);
 			curitem++;
 		}
 	}
@@ -385,7 +387,7 @@ void menu_select_game::populate()
 						}
 
 						ui_system_info const &sysinfo = m_persistent_data.systems()[driver_list::find(info.driver->name)];
-						item_append(sysinfo.description, cloneof ? FLAG_INVERT : 0, (void *)&info);
+						item_append(std::string(_("lst", sysinfo.description)), cloneof ? FLAG_INVERT : 0, (void *)&info);
 					}
 					else
 					{
