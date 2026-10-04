@@ -15,12 +15,14 @@
 #include "input.h"
 #include "ioport.h"
 #include "moptions.h"
+#include "rendfont.h"
 #include "screen.h"
 #include "textbox.h"
 
 #include "scale/osdscale.h"
 
 #include <algorithm>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -185,6 +187,32 @@ menu_custom_button::~menu_custom_button()
 }
 
 
+// MAMEPlus port: render the button combination with the command glyph
+// font -- Plus wrote "_A_+_B" markers and the U+E000 command glyphs
+// turn them into button icons
+static std::string custom_button_glyphs(u16 value, bool is_neogeo)
+{
+	std::string markers;
+	char const first = is_neogeo ? 'A' : 'a';
+	for (int i = 0; MAX_NORMAL_BUTTONS > i; ++i)
+		if (value & (u16(1) << i))
+		{
+			if (!markers.empty())
+				markers.append("_+");
+			markers.append(1, '_').append(1, char(first + i));
+		}
+	return convert_command_glyph(markers);
+}
+
+// NeoGeo builds show letter buttons (A~D), everything else numbered
+// buttons (1~6) -- mirrors MAMEPlus
+static bool driver_is_neogeo(running_machine const &machine)
+{
+	char const *const source = machine.root_device().source();
+	return source && (std::strstr(source, "neogeo") != nullptr);
+}
+
+
 //-------------------------------------------------
 //  populate
 //-------------------------------------------------
@@ -211,20 +239,14 @@ void menu_custom_button::populate()
 				return a->type() < b->type();
 			});
 
+	bool const is_neogeo = driver_is_neogeo(machine());
+
 	for (ioport_field *field : fields)
 	{
 		int const which = field->type() - IPT_CUSTOM1;
-		std::string subtext;
-		int n = 1;
 
-		// unpack the custom button combination
-		for (int i = 0; i < MAX_NORMAL_BUTTONS; i++, n <<= 1)
-			if (machine().ioport().get_custom_button(field->player(), which) & n)
-			{
-				if (!subtext.empty())
-					subtext.append("+");
-				subtext.append(1, char('A' + i));
-			}
+		// unpack the custom button combination into button icons
+		std::string const subtext(custom_button_glyphs(machine().ioport().get_custom_button(field->player(), which), is_neogeo));
 
 		// the ref points at this custom button field
 		item_append(std::string(field->name()), subtext, FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW, field);
@@ -280,17 +302,8 @@ bool menu_custom_button::handle(event const *ev)
 				u16 const newval = oldval ^ u16(1 << i);
 				machine().ioport().set_custom_button(player, which, newval);
 
-				// refresh the subtext of the item we belong to
-				std::string subtext;
-				int n = 1;
-				for (int j = 0; j < MAX_NORMAL_BUTTONS; j++, n <<= 1)
-					if (newval & n)
-					{
-						if (!subtext.empty())
-							subtext.append("+");
-						subtext.append(1, char('A' + j));
-					}
-				ev->item->set_subtext(subtext);
+				// refresh the subtext with button icons
+				ev->item->set_subtext(custom_button_glyphs(newval, driver_is_neogeo(machine())));
 
 				changed = true;
 				break;
@@ -467,10 +480,12 @@ bool menu_command_list::handle(event const *ev)
 		int const selected = int(uintptr_t(ev->itemref));
 		if ((selected >= 0) && (m_sections.size() > (size_t)selected))
 		{
-			// pass a copy: the menu may be revisited
+			// pass a copy: the menu may be revisited; the content gets
+			// the MAMEPlus command glyph conversion so "_A"-style
+			// markers render as button/joystick icons
 			menu::stack_push<menu_fixed_textbox>(ui(), container(),
 					std::string(_("menu-main", "Command List")) + " - " + m_sections[selected].title,
-					std::string(m_sections[selected].content));
+					convert_command_glyph(m_sections[selected].content));
 			return true;
 		}
 	}

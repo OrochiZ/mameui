@@ -99,13 +99,13 @@ OVERRIDE_CXX = clang++
 
 # DEPRECATED = 0
 # LTO = 1
-SSE2 = 1
+# SSE2 = 1
 # OPENMP = 1
 
 # SEPARATE_BIN = 1
 # PYTHON_EXECUTABLE = python3
 # SHADOW_CHECK = 1
-# STRIP_SYMBOLS = 1
+# STRIP_SYMBOLS = 0
 
 # QT_HOME = /usr/lib64/qt48/
 
@@ -1042,10 +1042,10 @@ endif
 ifneq ($(IGNORE_GIT),1)
 NEW_GIT_VERSION := $(shell git describe --dirty)
 else
-NEW_GIT_VERSION := $(strip $(shell cmd /c date /T))
+NEW_GIT_VERSION := unknown
 endif
 ifeq ($(NEW_GIT_VERSION),)
-NEW_GIT_VERSION := automated
+NEW_GIT_VERSION := unknown
 endif
 
 GENIE := 3rdparty/genie/bin/$(GENIEOS)/genie$(EXE)

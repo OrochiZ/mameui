@@ -2976,6 +2976,11 @@ msgctxt "menu-main"
 msgid "Cheat"
 msgstr "作弊选项"
 
+#: src/frontend/mame/ui/mainmenu.cpp:210
+msgctxt "menu-main"
+msgid "Cheat Options"
+msgstr "游戏作弊"
+
 #: src/frontend/mame/ui/mainmenu.cpp:172
 msgctxt "menu-main"
 msgid "Plugin Options"
@@ -6449,7 +6454,7 @@ msgstr "%s 已加入"
 #: plugins/data/data_command.lua:25
 msgctxt "plugin-data"
 msgid "Command"
-msgstr "出招表"
+msgstr "显示出招表"
 
 #: plugins/data/data_story.lua:24
 msgctxt "plugin-data"
@@ -6542,11 +6547,11 @@ msgstr ""
 
 msgctxt "menu-main"
 msgid "Autofire Settings"
-msgstr "自动连发设置"
+msgstr "连射设置"
 
 msgctxt "menu-main"
 msgid "Custom Buttons"
-msgstr "自定义组合按键"
+msgstr "自定义按钮"
 
 msgctxt "menu-main"
 msgid "Image Enhancement"
@@ -6554,7 +6559,7 @@ msgstr "图像增强"
 
 msgctxt "menu-main"
 msgid "Command List"
-msgstr "出招表"
+msgstr "显示出招表"
 
 msgctxt "menu-main"
 msgid "No command data for this game"
@@ -6562,11 +6567,11 @@ msgstr "没有该游戏的出招表数据"
 
 msgctxt "autofire"
 msgid "Autofire Settings"
-msgstr "自动连发设置"
+msgstr "连射设置"
 
 msgctxt "autofire"
 msgid "Custom Buttons"
-msgstr "自定义组合按键"
+msgstr "自定义按钮"
 
 msgctxt "autofire"
 msgid "Image Enhancement"
@@ -6574,7 +6579,7 @@ msgstr "图像增强"
 
 msgctxt "autofire"
 msgid "Command List"
-msgstr "出招表"
+msgstr "显示出招表"
 
 msgctxt "autofire"
 msgid "On"

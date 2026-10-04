@@ -127,15 +127,6 @@ void menu_main::populate()
 	item_append(_("menu-main", "Autofire Settings"), 0, (void *)PLUS_AUTOFIRE);
 	item_append(_("menu-main", "Custom Buttons"), 0, (void *)PLUS_CUSTOM_BUTTONS);
 
-	// MAMEPlus port: command.dat section viewer (only when present)
-	{
-		// the history path is a UI option, not a machine option --
-		// machine().options() has no such entry and value() returns null
-		emu_file cmdfile(ui().options().history_path(), OPEN_FLAG_READ);
-		if (!cmdfile.open("command.dat"))
-			item_append(_("menu-main", "Command List"), 0, (void *)PLUS_COMMAND);
-	}
-
 	if (ui().machine_info().has_dips())
 		item_append(_("menu-main", "DIP Switches"), 0, (void *)SETTINGS_DIP_SWITCHES);
 	if (ui().machine_info().has_configs())
@@ -201,6 +192,16 @@ void menu_main::populate()
 
 	if (machine().options().cheat())
 		item_append(_("menu-main", "Cheat Options"), 0, (void *)CHEAT);
+
+	// MAMEPlus port: command.dat section viewer (only when present),
+	// placed between the cheat entry and the external DAT view
+	{
+		// the history path is a UI option, not a machine option --
+		// machine().options() has no such entry and value() returns null
+		emu_file cmdfile(ui().options().history_path(), OPEN_FLAG_READ);
+		if (!cmdfile.open("command.dat"))
+			item_append(_("menu-main", "Command List"), 0, (void *)PLUS_COMMAND);
+	}
 
 	if (machine_phase::RESET <= m_phase)
 	{
