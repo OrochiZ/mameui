@@ -133,6 +133,9 @@ b) Exit the dialog.
 #include "messui.h"
 #endif
 
+// single definition (declared extern in properties.h so every TU shares it)
+BOOL g_bModifiedSoftwarePaths = FALSE;
+
 /***************************************************************
  * Imported function prototypes
  ***************************************************************/

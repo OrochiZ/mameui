@@ -47,7 +47,7 @@ int PropertiesCurrentGame(HWND hDlg);
 // from propertiesms.h (MESSUI)
 
 BOOL MessPropertiesCommand(HWND hWnd, WORD wNotifyCode, WORD wID, BOOL *changed);
-BOOL g_bModifiedSoftwarePaths = FALSE;
+extern BOOL g_bModifiedSoftwarePaths; // defined in properties.cpp
 INT_PTR CALLBACK GameMessOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 //BOOL PropSheetFilter_Config(const machine_config *drv, const game_driver *gamedrv);  // not used
 
