@@ -93,7 +93,6 @@ NO_USE_PIPEWIRE = 1
 # TOOLCHAIN =
 OVERRIDE_CC = clang
 OVERRIDE_CXX = clang++
-#LDOPTS = -fuse-ld=lld
 # OVERRIDE_LD = ld
 # OVERRIDE_AR = ar
 
@@ -1042,10 +1041,14 @@ endif
 ifneq ($(IGNORE_GIT),1)
 NEW_GIT_VERSION := $(shell git describe --dirty)
 else
-NEW_GIT_VERSION := unknown
+  ifeq (posix,$(SHELLTYPE))
+    NEW_GIT_VERSION := $(strip $(shell date "+%Y/%m/%d"))
+  else
+    NEW_GIT_VERSION := $(strip $(shell cmd /c date /T))
+  endif
 endif
 ifeq ($(NEW_GIT_VERSION),)
-NEW_GIT_VERSION := unknown
+NEW_GIT_VERSION := automated
 endif
 
 GENIE := 3rdparty/genie/bin/$(GENIEOS)/genie$(EXE)
