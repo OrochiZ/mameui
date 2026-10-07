@@ -119,7 +119,7 @@ OVERRIDE_CXX = clang++
 # PRECOMPILE = 0
 
 # DEBUG_DIR=c:\test\location
-# DEBUG_ARGS= -window -video bgfx
+# DEBUG_ARGS= -window
 
 ifdef PREFIX_MAKEFILE
 include $(PREFIX_MAKEFILE)
@@ -1504,7 +1504,6 @@ clean: genieclean
 	@echo Cleaning...
 	-$(SILENT)rm -f language/*/*.mo
 	-$(SILENT)rm -rf $(BUILDDIR)
-	-$(SILENT)rm -rf 3rdparty/bgfx/.build
 
 GEN_FOLDERS := $(GENDIR)/$(TARGET)/layout/ $(GENDIR)/$(TARGET)/$(SUBTARGET_FULL)/ $(GENDIR)/mame/drivers/ $(GENDIR)/mame/machine/
 
@@ -1610,13 +1609,11 @@ ifeq (posix,$(SHELLTYPE))
 		-name \*.lst \
 		\) -print0 | xargs -0 -n 20 ./srcclean >&2
 	$(SILENT)- find hash    \( -name \*.hsi -o -name \*.xml  \) -print0 | xargs -0 -n 20 ./srcclean >&2
-	$(SILENT)- find bgfx    \( -name \*.json                 \) -print0 | xargs -0 -n 20 ./srcclean >&2
 	$(SILENT)- find plugins \( -name \*.lua -o -name \*.json \) -print0 | xargs -0 -n 20 ./srcclean >&2
 	$(SILENT)- find scripts \( -name \*.lua                  \) -print0 | xargs -0 -n 20 ./srcclean >&2
 else
 	$(shell for /r src     %%i in (*.c, *.cpp, *.h, *.hpp, *.hxx, *.ipp, *.mm, *.lay, *.lst) do srcclean %%i >&2 )
 	$(shell for /r hash    %%i in (*.hsi, *.xml)  do srcclean %%i >&2 )
-	$(shell for /r bgfx    %%i in (*.json)        do srcclean %%i >&2 )
 	$(shell for /r plugins %%i in (*.lua, *.json) do srcclean %%i >&2 )
 	$(shell for /r scripts %%i in (*.lua)         do srcclean %%i >&2 )
 endif
@@ -1651,8 +1648,6 @@ endif
 ifndef USE_SYSTEM_LIB_ZLIB
 CPPCHECK_PARAMS += -I3rdparty/zlib
 endif
-CPPCHECK_PARAMS += -I3rdparty/bgfx/include
-CPPCHECK_PARAMS += -I3rdparty/bx/include
 CPPCHECK_PARAMS += -I$(BUILDDIR)/generated/emu
 CPPCHECK_PARAMS += -I$(BUILDDIR)/generated/emu/layout
 CPPCHECK_PARAMS += -I$(BUILDDIR)/generated/mame/layout
@@ -1675,32 +1670,6 @@ cppcheck:
 	@echo Generate CppCheck analysis report
 	cppcheck --enable=all src/ $(CPPCHECK_PARAMS) -j9
 
-#-------------------------------------------------
-# BGFX shaders
-#
-# to build all just use : make shaders
-#
-# to build specific chain use for example : make shaders CHAIN=eagle
-# data for chain is taken from src/osd/modules/render/bgfx/shaders/chains/
-# subfolder named in CHAIN
-# NOTE: shaders can be only built on Windows for now
-# due to restrictions of way how hlsl shaders are compiled
-#-------------------------------------------------
-
-.PHONY: shaders bgfx-tools
-
-bgfx-tools:
-	$(SILENT) $(MAKE) -C 3rdparty/bgfx -f makefile shaderc CC="$(CC)" CXX="$(CXX)" MINGW="$(MINGW)" SILENT="$(SILENT)"
-
-shaders: bgfx-tools
-	-$(call MKDIR,build/shaders/dx11)
-	-$(call MKDIR,build/shaders/dx9)
-	-$(call MKDIR,build/shaders/pssl)
-	-$(call MKDIR,build/shaders/metal)
-	-$(call MKDIR,build/shaders/essl)
-	-$(call MKDIR,build/shaders/glsl)
-	-$(call MKDIR,build/shaders/spirv)
-	$(SILENT) $(MAKE) -C $(SRC)/osd/modules/render/bgfx/shaders rebuild CHAIN="$(CHAIN)" SILENT="$(SILENT)"
 
 #-------------------------------------------------
 # Translation

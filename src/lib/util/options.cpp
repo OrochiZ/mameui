@@ -27,31 +27,6 @@
 const int core_options::MAX_UNADORNED_OPTIONS;
 
 //**************************************************************************
-//  GLOBAL VARIABLES
-//**************************************************************************
-
-const char *const core_options::s_option_unadorned[MAX_UNADORNED_OPTIONS] =
-{
-	"<UNADORNED0>",
-	"<UNADORNED1>",
-	"<UNADORNED2>",
-	"<UNADORNED3>",
-	"<UNADORNED4>",
-	"<UNADORNED5>",
-	"<UNADORNED6>",
-	"<UNADORNED7>",
-	"<UNADORNED8>",
-	"<UNADORNED9>",
-	"<UNADORNED10>",
-	"<UNADORNED11>",
-	"<UNADORNED12>",
-	"<UNADORNED13>",
-	"<UNADORNED14>",
-	"<UNADORNED15>"
-};
-
-
-//**************************************************************************
 //  UTILITY
 //**************************************************************************
 

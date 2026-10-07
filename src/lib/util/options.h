@@ -225,8 +225,9 @@ public:
 	void set_value(std::string_view name, int value, int priority);
 	void set_value(std::string_view name, float value, int priority);
 
-	// misc
-	static const char *unadorned(int x = 0) noexcept { return s_option_unadorned[std::min(x, MAX_UNADORNED_OPTIONS - 1)]; }
+	// misc -- constexpr so option tables using unadorned() stay constant-initialized
+	// (no static constructor needed; immune to static init order across linkers)
+	static constexpr const char *unadorned(int x = 0) noexcept { return s_option_unadorned[std::min(x, MAX_UNADORNED_OPTIONS - 1)]; }
 
 protected:
 	virtual void command_argument_processed() { }
@@ -287,7 +288,25 @@ private:
 	std::unordered_map<std::string_view, entry::weak_ptr> m_entrymap;           // map for fast lookup
 	std::string                                         m_command;              // command found
 	std::vector<std::string>                            m_command_arguments;    // command arguments
-	static const char *const                            s_option_unadorned[];   // array of unadorned option "names"
+	static constexpr const char *const                  s_option_unadorned[MAX_UNADORNED_OPTIONS] =
+	{
+		"<UNADORNED0>",
+		"<UNADORNED1>",
+		"<UNADORNED2>",
+		"<UNADORNED3>",
+		"<UNADORNED4>",
+		"<UNADORNED5>",
+		"<UNADORNED6>",
+		"<UNADORNED7>",
+		"<UNADORNED8>",
+		"<UNADORNED9>",
+		"<UNADORNED10>",
+		"<UNADORNED11>",
+		"<UNADORNED12>",
+		"<UNADORNED13>",
+		"<UNADORNED14>",
+		"<UNADORNED15>"
+	};   // array of unadorned option "names"
 };
 
 
